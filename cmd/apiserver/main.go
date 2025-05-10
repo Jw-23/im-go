@@ -10,7 +10,8 @@ import (
 	"net/http"
 	"os"
 	"os/signal" // Added for stripping prefix
-	"strings"   // Added for stripping prefix
+	"path/filepath"
+	"strings" // Added for stripping prefix
 	"syscall"
 	"time"
 
@@ -151,6 +152,36 @@ func main() {
 		r.PathPrefix(staticPath).Handler(http.StripPrefix(staticPath, http.FileServer(localDir)))
 		log.Printf("提供静态文件服务于 %s -> %s", staticPath, cfg.Storage.LocalPath)
 	}
+
+	// 7.5 静态文件服务路由 (前端应用) - ADDED
+	frontendBuildPath := "./site/dist" // ADJUST THIS to where your frontend build output is
+	frontendFileServer := http.FileServer(http.Dir(frontendBuildPath))
+	// Serve static files like CSS, JS, images etc. from /app/static/
+	// The URL path /app/static/ will be stripped, and the rest will be looked up in frontendBuildPath.
+	// Example: /app/static/css/main.css -> frontendBuildPath/css/main.css
+	// You might need to adjust your frontend's base path or asset paths if they don't align.
+	// A common pattern is to serve assets directly from paths like /assets/ or /static/ relative to index.html
+	// For now, let's assume assets are referenced relative to index.html in the frontendBuildPath.
+	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", frontendFileServer)) // Or another path like /assets/
+
+	// Serve index.html for the root path and any other unhandled paths (for SPA routing)
+	r.PathPrefix("/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Check if the requested file exists in the static directory
+		// This prevents serving index.html for actual static files that might be requested without the /static/ prefix
+		potentialFilePath := filepath.Join(frontendBuildPath, r.URL.Path)
+		// Ensure the path is clean and doesn't try to escape the frontendBuildPath (though http.Dir should handle this)
+		potentialFilePath = filepath.Clean(potentialFilePath)
+		if strings.HasPrefix(potentialFilePath, filepath.Clean(frontendBuildPath)) {
+			fileInfo, err := os.Stat(potentialFilePath)
+			if err == nil && !fileInfo.IsDir() {
+				http.ServeFile(w, r, potentialFilePath)
+				return
+			}
+		}
+		// If not an existing file, or it's a directory, or any other case, serve index.html
+		http.ServeFile(w, r, filepath.Join(frontendBuildPath, "index.html"))
+	})
+	log.Printf("为前端应用提供静态文件服务，根路径指向 %s/index.html", frontendBuildPath)
 
 	// 8. 初始化并启动 Kafka 消费者 (用于处理 FriendRequest)
 	friendReqConsumer, err := appKafka.NewConfluentKafkaConsumer(cfg.Kafka)
