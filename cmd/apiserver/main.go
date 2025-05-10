@@ -175,23 +175,31 @@ func main() {
 	// 9. 启动 HTTP 服务器并实现优雅关闭
 	serverAddr := fmt.Sprintf("%s:%s", cfg.APIServer.Host, cfg.APIServer.Port)
 
-	// 定义 CORS 选项 (NEW)
-	// 对于开发环境，允许所有来源 "*" 和常用的方法/头部通常是可以的
-	// 对于生产环境，您应该指定更严格的来源
-	// 注意：对于 AllowedOrigins，如果您的前端在特定端口（如 Vite 的 5173），您可能需要指定 "http://localhost:5173"
-	// 或者如果您使用了 create-react-app 可能是 "http://localhost:3000"
-	// 使用 "*" 是最宽松的，但在开发时可以接受。
-	allowedOrigins := handlers.AllowedOrigins([]string{"*"})
-	allowedMethods := handlers.AllowedMethods([]string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodOptions})
-	allowedHeaders := handlers.AllowedHeaders([]string{"Content-Type", "Authorization", "X-Requested-With"})
-	allowCredentials := handlers.AllowCredentials()
+	// 定义 CORS 选项，从配置中读取 (MODIFIED)
+	allowedOrigins := handlers.AllowedOrigins(cfg.APIServer.CORS.AllowedOrigins)
+	allowedMethods := handlers.AllowedMethods(cfg.APIServer.CORS.AllowedMethods)
+	allowedHeaders := handlers.AllowedHeaders(cfg.APIServer.CORS.AllowedHeaders)
+	exposedHeaders := handlers.ExposedHeaders(cfg.APIServer.CORS.ExposedHeaders)
+	maxAge := handlers.MaxAge(cfg.APIServer.CORS.MaxAge)
 
-	// 将主路由器 r 包装在 CORS 中间件中 (NEW)
-	corsHandler := handlers.CORS(allowedOrigins, allowedMethods, allowedHeaders, allowCredentials)(r)
+	// 构建CORS选项列表
+	corsOptions := []handlers.CORSOption{
+		allowedOrigins,
+		allowedMethods,
+		allowedHeaders,
+		exposedHeaders,
+		maxAge,
+	}
+	if cfg.APIServer.CORS.AllowCredentials {
+		corsOptions = append(corsOptions, handlers.AllowCredentials())
+	}
+
+	// 将主路由器 r 包装在 CORS 中间件中
+	corsHandler := handlers.CORS(corsOptions...)(r)
 
 	srv := &http.Server{
 		Addr:         serverAddr,
-		Handler:      corsHandler, // MODIFIED: Use wrapped corsHandler
+		Handler:      corsHandler,
 		ReadTimeout:  cfg.Server.ReadTimeout,
 		WriteTimeout: cfg.Server.WriteTimeout,
 		IdleTimeout:  time.Second * 60,

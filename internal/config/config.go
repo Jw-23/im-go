@@ -9,8 +9,19 @@ import (
 
 // APIServerConfig 保存 API 服务器特有的配置。
 type APIServerConfig struct {
-	Host string `mapstructure:"HOST"`
-	Port string `mapstructure:"PORT"`
+	Host string     `mapstructure:"HOST"`
+	Port string     `mapstructure:"PORT"`
+	CORS CORSConfig `mapstructure:"CORS"` // ADDED: CORS configuration
+}
+
+// ADDED: CORSConfig holds configuration for CORS.
+type CORSConfig struct {
+	AllowedOrigins   []string `mapstructure:"ALLOWED_ORIGINS"`
+	AllowedMethods   []string `mapstructure:"ALLOWED_METHODS"`
+	AllowedHeaders   []string `mapstructure:"ALLOWED_HEADERS"`
+	ExposedHeaders   []string `mapstructure:"EXPOSED_HEADERS"`
+	AllowCredentials bool     `mapstructure:"ALLOW_CREDENTIALS"`
+	MaxAge           int      `mapstructure:"MAX_AGE"`
 }
 
 // Config holds all configuration for the application.
@@ -117,6 +128,13 @@ func LoadConfig(path string) (config Config, err error) {
 	// APIServer Defaults (新增)
 	v.SetDefault("API_SERVER.HOST", "0.0.0.0")
 	v.SetDefault("API_SERVER.PORT", "8081") // 为 API 服务器设置不同端口
+	// ADDED: APIServer CORS Defaults
+	v.SetDefault("API_SERVER.CORS.ALLOWED_ORIGINS", []string{"http://localhost:5173"}) // Adjust for your frontend URL
+	v.SetDefault("API_SERVER.CORS.ALLOWED_METHODS", []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"})
+	v.SetDefault("API_SERVER.CORS.ALLOWED_HEADERS", []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"})
+	v.SetDefault("API_SERVER.CORS.EXPOSED_HEADERS", []string{"Content-Length"})
+	v.SetDefault("API_SERVER.CORS.ALLOW_CREDENTIALS", true)
+	v.SetDefault("API_SERVER.CORS.MAX_AGE", 300) // 5 minutes
 
 	// Kafka Defaults
 	v.SetDefault("KAFKA.BROKERS", []string{"localhost:9092"})
