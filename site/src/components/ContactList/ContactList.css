@@ -1,0 +1,70 @@
+/* ContactList.css */
+.contact-list-container {
+  padding: 0; /* Adjust as needed */
+  height: 100%; /* Fill the available space in sidebar */
+  overflow-y: auto;
+}
+
+.contact-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.contact-list-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 15px; /* Adjust padding */
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-color);
+  gap: 10px;
+  transition: background-color 0.2s ease;
+}
+
+.contact-list-item:hover {
+  background-color: var(--hover-background);
+}
+
+.contact-list-item:last-child {
+  border-bottom: none;
+}
+
+.contact-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--secondary-background); /* Placeholder color */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8em;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.contact-info {
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.contact-name {
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block; /* Ensure ellipsis works */
+}
+
+.loading-placeholder,
+.error-message,
+.empty-placeholder {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 20px;
+    margin-top: 20px; /* Add some space */
+}
+
+.error-message {
+    color: var(--error-color);
+} 

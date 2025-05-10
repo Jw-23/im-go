@@ -1,0 +1,29 @@
+.theme-switcher {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  background-color: var(--sidebar-bg); /* Use sidebar background or a specific one */
+  /* border-top: 1px solid var(--border-color); Optional: if at bottom of sidebar */
+}
+
+.theme-switcher__label {
+  margin-right: 8px;
+  font-size: 0.9rem;
+  color: var(--text-color);
+}
+
+.theme-switcher__select {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background-color: var(--chat-bg); /* Or var(--background-color) */
+  color: var(--text-color);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.theme-switcher__select:focus {
+  outline: none;
+  border-color: var(--imessage-blue);
+  box-shadow: 0 0 0 2px rgba(var(--imessage-blue-rgb, 0, 122, 255), 0.3); /* Create --imessage-blue-rgb if needed */
+} 

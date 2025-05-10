@@ -1,0 +1,154 @@
+.settings-modal__overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000; /* Ensure it's on top */
+}
+
+.settings-modal__content {
+  background-color: var(--sidebar-bg); /* Use a background color from variables */
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 600px; /* MODIFIED: Increased max-width for two-column layout */
+  z-index: 1001;
+  min-height: 400px; /* ADDED: Optionally, set a min-height */
+}
+
+.settings-modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.settings-modal__header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: var(--text-color);
+}
+
+.settings-modal__close-button {
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: var(--text-color);
+  cursor: pointer;
+  padding: 0 5px;
+}
+
+/* MODIFIED: Replaced .settings-modal__body with .settings-modal__body-container and added flex styles */
+.settings-modal__body-container {
+  display: flex;
+  flex-direction: row; /* Align nav and content side-by-side */
+  padding-top: 15px; /* Add some space below the header */
+  color: var(--text-color); /* Moved from old .settings-modal__body */
+}
+
+/* ADDED: New styles for navigation panel */
+.settings-modal__nav {
+  width: 150px; /* Fixed width for the navigation panel */
+  padding-right: 15px; /* Space between nav and content */
+  border-right: 1px solid var(--border-color); /* Separator line */
+  display: flex;
+  flex-direction: column;
+}
+
+/* ADDED: New styles for navigation items */
+.settings-modal__nav-item {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  padding: 10px 15px;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.95rem;
+  border-radius: 4px; /* Subtle rounding for items */
+  margin-bottom: 5px; /* Space between nav items */
+  width: 100%; /* Make button take full width of nav container */
+}
+
+.settings-modal__nav-item:hover {
+  background-color: var(--hover-bg-color, #f0f0f0); /* Use a hover background variable or fallback */
+}
+
+.settings-modal__nav-item--active {
+  background-color: var(--active-bg-color, #e0e0e0); /* Use an active background variable or fallback */
+  color: var(--active-text-color, var(--text-color)); /* Use an active text color variable or fallback */
+  font-weight: 600;
+}
+
+/* ADDED: New styles for main content area */
+.settings-modal__main-content {
+  flex-grow: 1; /* Content area takes remaining space */
+  padding-left: 20px; /* Space to the left of content (after nav's border) */
+  overflow-y: auto; /* If content is too tall */
+}
+
+/* MODIFIED: Adjustments for sections within the new main content area */
+.settings-modal__main-content .settings-modal__section {
+  margin-bottom: 0; /* Remove bottom margin as sections are now switched */
+}
+
+/* MODIFIED: Remove dividers as layout is now tabbed */
+.settings-modal__divider {
+  display: none;
+}
+
+/* MODIFIED: Remove original section title styles as they are no longer used */
+.settings-modal__section-title {
+  display: none; 
+}
+
+/* MODIFIED: Adjust padding for specific sections if needed */
+.language-settings-section, 
+.theme-settings-section, 
+.auth-settings-section {
+  padding: 5px 0; /* Adjust as needed */
+}
+
+/* User Info Styles */
+.user-info p {
+  margin-bottom: 15px;
+  font-size: 0.95rem;
+  color: var(--text-color);
+}
+
+.user-info strong {
+  font-weight: 600;
+}
+
+.auth-form__button--logout {
+  background-color: #ff3b30; /* iOS system red for destructive actions */
+  width: 100%;
+}
+
+.auth-form__button--logout:hover {
+  background-color: #ff453a;
+}
+
+/* Adjust ThemeSwitcher styles when inside modal if necessary */
+.settings-modal__body .theme-settings-section .theme-switcher {
+  padding: 0; /* Remove all padding if section title provides spacing */
+  border-top: none;
+}
+
+.settings-modal__body .theme-settings-section .theme-switcher__label {
+    /* font-size: 1rem; */ /* Example: Make label larger if needed */
+}
+
+/* Adjust ThemeSwitcher styles when inside modal if necessary */
+.settings-modal__body .theme-switcher {
+  padding: 8px 0; /* Remove horizontal padding, keep vertical */
+  border-top: none; /* Remove top border if it was for sidebar placement */
+} 

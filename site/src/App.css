@@ -1,0 +1,83 @@
+.app-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background-color: var(--chat-bg);
+}
+
+.sidebar {
+  width: 400px;
+  min-width: 250px;
+  max-width: 350px;
+  height: 100%;
+  background-color: var(--sidebar-bg);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.chat-area {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--chat-bg);
+}
+
+.no-chat-selected {
+  display: flex;
+  flex-grow: 1;
+  align-items: center;
+  justify-content: center;
+  color: #8e8e93; /* iMessage placeholder text color */
+  font-size: 1.2rem;
+  text-align: center;
+}
+
+.no-chat-selected p {
+  max-width: 200px;
+}
+
+/* Add more specific styles for header, search, etc. in sidebar later */
+
+.app-container--auth {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh; /* Full viewport height */
+  width: 100vw; /* Full viewport width */
+  background-color: var(--bg-color); /* Use your app's background color */
+  color: var(--text-color);
+}
+
+.auth-prompt {
+  text-align: center;
+  padding: 20px;
+}
+
+.auth-prompt h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: var(--header-text-color, var(--text-color)); /* Use a specific header color or fallback */
+}
+
+.auth-prompt p {
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+.auth-prompt__button {
+  background: none;
+  border: none;
+  color: var(--link-color, #007bff); /* Use a link color variable or fallback */
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: inherit; /* Inherit font size from parent <p> */
+  padding: 0;
+}
+
+.auth-prompt__button:hover {
+  color: var(--link-hover-color, #0056b3); /* Use a link hover color variable or fallback */
+} 

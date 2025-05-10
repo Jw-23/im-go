@@ -1,0 +1,22 @@
+.settings-button {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  padding: 10px 16px; /* Adjust padding as needed */
+  margin-top: auto; /* Pushes it to the bottom if sidebar is flex-column */
+  cursor: pointer;
+  font-size: 1.2rem; /* Adjust icon size if using text/emoji */
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* Align icon/text to the left */
+  width: 100%;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.settings-button:hover {
+  background-color: var(--hover-bg-color);
+}
+
+.settings-button span {
+    font-size: 1.5rem; /* Size for the gear icon */
+} 

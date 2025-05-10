@@ -1,0 +1,27 @@
+.language-switcher {
+  display: flex;
+  align-items: center;
+  /* padding: 8px 0; Similar to ThemeSwitcher inside modal */
+}
+
+.language-switcher__label {
+  margin-right: 8px;
+  font-size: 0.9rem; /* Matches ThemeSwitcher label */
+  color: var(--text-color);
+}
+
+.language-switcher__select {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background-color: var(--chat-bg); /* Or var(--background-color) */
+  color: var(--text-color);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.language-switcher__select:focus {
+  outline: none;
+  border-color: var(--imessage-blue);
+  box-shadow: 0 0 0 2px rgba(var(--imessage-blue-rgb), 0.3);
+} 

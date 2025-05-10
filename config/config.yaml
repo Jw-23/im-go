@@ -1,0 +1,58 @@
+APP_NAME: "IM-Go-ChatApp"
+APP_VERSION: "0.1.0"
+LOG_LEVEL: "debug"
+
+SERVER:
+  # ChatServer 配置
+  HOST: "127.0.0.1"
+  PORT: "8080" # ChatServer 端口
+  WEBSOCKET_PATH: "/ws/chat"
+  READ_TIMEOUT: "30s"
+  WRITE_TIMEOUT: "30s"
+  MAX_HEADER_BYTES: 1048576 # 1MB
+
+API_SERVER:
+  # 新增 API 服务器配置
+  HOST: "127.0.0.1"
+  PORT: "8081" # API 服务器端口，确保与 ChatServer 不同
+
+KAFKA:
+  BROKERS: [ "localhost:9092" ] # Example with multiple brokers
+  CLIENT_ID: "im-go-chat-app-client"
+  MESSAGES_TOPIC: "chat-messages"
+  GROUP_TOPIC: "group-chat-messages"
+  NOTIFICATIONS_TOPIC: "user-notifications"
+  WEBSOCKET_OUTGOING_TOPIC: "im-websocket-outgoing"
+  CONSUMER_GROUP: "chat-app-consumers"
+  FRIEND_REQUEST_TOPIC: "im-friend-request"
+  PROTOCOL: "PLAINTEXT"
+
+DATABASE:
+  TYPE: "postgres"
+  HOST: "127.0.0.1"
+  PORT: 5433
+  USER: "junwei"
+  PASSWORD: ""
+  DB_NAME: "im_chat_prod"
+  SSL_MODE: "disable"
+
+STORAGE:
+  TYPE: "local" # Example using local
+  LOCAL_PATH: "./uploads_data" # Still can be a fallback or for local dev
+  MAX_FILE_SIZE_MB: 200
+  S3:
+    BUCKET_NAME: "im-chat-app-files"
+    REGION: "us-east-1"
+    ACCESS_KEY_ID: "YOUR_S3_ACCESS_KEY_ID" # Placeholder
+    SECRET_ACCESS_KEY: "YOUR_S3_SECRET_ACCESS_KEY" # Placeholder
+    ENDPOINT: "" # Optional: for S3-compatible storage like MinIO
+
+AUTH:
+  JWT_SECRET_KEY: "change_this_super_secret_key_in_production"
+  JWT_EXPIRY: "1h" # Token expiry of 1 hour
+
+WEBSOCKET:
+  WRITE_WAIT_SECONDS: 10
+  PONG_WAIT_SECONDS: 60
+  PING_PERIOD_SECONDS: 54
+  MAX_MESSAGE_SIZE_BYTES: 1024 # Increased from default for example 

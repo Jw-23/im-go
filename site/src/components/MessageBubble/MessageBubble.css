@@ -1,0 +1,193 @@
+.message-bubble-row {
+  display: flex;
+  margin-bottom: 10px; /* Spacing between messages */
+  padding: 0 10px; /* Padding for the row itself to not stick to screen edges */
+}
+
+.message-bubble-row.sent {
+  justify-content: flex-end;
+}
+
+.message-bubble-row.received {
+  justify-content: flex-start;
+}
+
+.message-bubble {
+  max-width: 70%;
+  padding: 10px 15px;
+  border-radius: 18px;
+  margin-bottom: 5px;
+  position: relative; /* Needed for absolute positioning of timestamp */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.4;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+.message-bubble.sender {
+  background-color: var(--imessage-blue-light); /* Lighter blue for sender */
+  color: rgb(255, 255, 255); /* Or use a variable */
+  margin-left: auto; /* Align to the right */
+  border-bottom-right-radius: 5px; /* Add tail effect */
+}
+
+.message-bubble.receiver {
+  background-color: var(--imessage-gray); /* Gray for receiver */
+  color: var(--text-primary); /* Use theme variable */
+  margin-right: auto; /* Align to the left */
+  border-bottom-left-radius: 5px; /* Add tail effect */
+}
+
+.message-content {
+  /* Style for the main content area if needed */
+}
+
+.message-text {
+  /* Specific styles for text if any */
+}
+
+.time-sender,
+.time-receiver {
+  display: block; /* Take full width below bubble */
+  font-size: 0.75em;
+  color: var(--text-secondary);
+  margin-top: 5px;
+  text-align: right; /* Default to right for sender */
+}
+
+.time-receiver {
+  text-align: left; /* Align time left for receiver */
+}
+
+/* Media Messages (Images/Files) */
+.message-media {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.message-media.image img {
+  max-width: 100%;
+  max-height: 200px; /* Limit image preview height */
+  border-radius: 10px;
+  cursor: pointer; /* Indicate it might be clickable for full view */
+}
+
+.message-media.file {
+  align-items: center; 
+  flex-direction: row;
+  gap: 10px;
+  padding: 5px 0; /* Add some padding */
+}
+
+.file-icon {
+  font-size: 1.5em;
+  color: var(--text-secondary);
+}
+
+.file-details {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.file-name {
+  font-size: 0.9em;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px; /* Adjust max width */
+}
+
+.file-size {
+    font-size: 0.8em;
+    color: var(--text-secondary);
+}
+
+.download-link {
+    font-size: 0.8em;
+    color: var(--primary-color);
+    text-decoration: none;
+    margin-left: auto; /* Push to the right */
+    padding: 2px 5px;
+    border-radius: 3px;
+}
+.download-link:hover {
+    text-decoration: underline;
+    background-color: var(--hover-background);
+}
+
+/* Ensure sender/receiver background takes precedence */
+.message-bubble.sender .file-name,
+.message-bubble.sender .file-size {
+    color: black; /* Adjust if needed */
+}
+
+.message-bubble.receiver .message-text,
+.message-bubble.receiver .file-name,
+.message-bubble.receiver .file-size {
+    color: var(--text-primary);
+}
+.message-bubble.receiver .file-icon {
+    color: var(--text-secondary);
+}
+
+.message-sender-name {
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-bottom: 3px;
+  color: #6d6d72;
+  display: block; /* Ensure it takes its own line above the message text */
+  padding-left: 2px; /* Small indent for sender name */
+}
+
+.message-bubble.received + .message-bubble.received .message-sender-name {
+  /* Hide sender name if previous message from same sender - needs JS logic to add a class */
+  /* display: none; */
+}
+
+.message-timestamp {
+  font-size: 0.7rem; 
+  text-align: right;
+  margin-top: 4px;
+  display: block; 
+  clear: both; /* Ensure it's below text if text is floated */
+}
+
+.message-bubble.sent .message-timestamp {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.message-bubble.received .message-timestamp {
+  color: #6D6D72; /* A typical iMessage timestamp color for received messages */
+}
+
+/* Minimalist tails using pseudo-elements - adjust as needed */
+/* These are very basic and might need tweaking for perfect alignment */
+.message-bubble.sent::after {
+  content: '';
+  position: absolute;
+  bottom: 0px;
+  right: -6px;
+  width: 0;
+  height: 0;
+  border: 10px solid transparent;
+  border-left-color: var(--imessage-blue);
+  border-bottom-color: var(--imessage-blue);
+  transform: rotate(45deg) translateY(-10px) translateX(2px);
+}
+
+.message-bubble.received::after {
+  content: '';
+  position: absolute;
+  bottom: 0px;
+  left: -6px;
+  width: 0;
+  height: 0;
+  border: 10px solid transparent;
+  border-right-color: var(--imessage-gray);
+  border-bottom-color: var(--imessage-gray);
+  transform: rotate(-45deg) translateY(-10px) translateX(-2px);
+} 

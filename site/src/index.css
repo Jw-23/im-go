@@ -1,0 +1,84 @@
+:root {
+  --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  
+  /* Light Theme (Default) */
+  --background-color: #ffffff; 
+  --text-color: #1c1c1e; /* iOS System Gray (Dark) */
+  --secondary-text-color: #8e8e93; /* iOS System Gray 2 */
+  --sidebar-bg: #f2f2f7; /* iOS System Gray 6 */
+  --chat-bg: #ffffff;
+  --border-color: #d1d1d6; /* iOS System Gray 4 */
+  --hover-bg-color: #e9e9eb; /* Subtle hover for list items etc. */
+  --active-bg-color: #e0e0e2;
+
+  --imessage-blue: #007aff;
+  --imessage-blue-rgb: 0, 122, 255; /* Added for rgba() usage */
+  --imessage-gray: #e5e5ea;
+  --imessage-text-light: #ffffff;
+  --imessage-text-dark: #000000;
+
+  --primary-button-bg: var(--imessage-blue);
+  --primary-button-text: var(--imessage-text-light);
+}
+
+html[data-theme='dark'] {
+  --background-color: #000000;
+  --text-color: #f2f2f7; /* iOS System Gray 6 (Light for dark mode) */
+  --secondary-text-color: #8d8d92; /* iOS System Gray (Dark mode) */
+  --sidebar-bg: #1c1c1e; /* iOS System Dark Gray */
+  --chat-bg: #000000;
+  --border-color: #3a3a3c; /* iOS System Gray 2 (Dark mode) */
+  --hover-bg-color: #2c2c2e; /* Subtle hover for list items etc. */
+  --active-bg-color: #38383a;
+
+  --imessage-blue: #0a84ff; /* Slightly brighter blue for dark mode */
+  --imessage-blue-rgb: 10, 132, 255; /* Added for rgba() usage */
+  --imessage-gray: #3a3a3c;
+  /* --imessage-text-light remains white */
+  /* --imessage-text-dark for outgoing bubbles is still black on light gray, but that light gray changes */
+}
+
+/* Basic Reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family-sans);
+  background-color: var(--background-color);
+  color: var(--text-color);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden; /* Prevent body scroll with app layout */
+}
+
+#root {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Basic scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+} 

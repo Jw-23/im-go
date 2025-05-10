@@ -1,0 +1,218 @@
+.add-contact-modal__overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6); /* Increased overlay darkness slightly */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050; 
+}
+
+.add-contact-modal__content {
+  background-color: var(--sidebar-bg); /* Using existing variable */
+  padding: 0; /* Remove padding as tabs and header/body will manage it */
+  border-radius: 8px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25); /* Enhanced shadow */
+  width: 90%;
+  max-width: 480px; /* Slightly increased max-width */
+  z-index: 1051;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; 
+}
+
+/* Styles for top tabs */
+.add-contact-modal__tabs {
+  display: flex;
+  background-color: var(--chat-header-bg, var(--sidebar-bg)); /* Use chat-header-bg or fallback */
+  /* border-bottom: 1px solid var(--border-color); */ /* Removed, active tab border is enough */
+}
+
+.add-contact-modal__tab-button {
+  flex-grow: 1;
+  padding: 14px 15px; /* Increased padding for better touch/click area */
+  cursor: pointer;
+  border: none;
+  background-color: transparent;
+  font-size: 0.95rem;
+  color: var(--secondary-text-color, #8e8e93); /* Using existing variable or fallback */
+  text-align: center;
+  transition: background-color 0.2s ease, color 0.2s ease, border-bottom-color 0.2s ease;
+  border-bottom: 3px solid transparent; 
+  font-weight: 500; /* Slightly bolder */
+}
+
+.add-contact-modal__tab-button:hover {
+  background-color: var(--hover-bg-color, rgba(0,0,0,0.05)); /* Using a generic hover variable */
+  color: var(--text-color);
+}
+
+.add-contact-modal__tab-button.active {
+  color: var(--imessage-blue, #007aff); /* Using existing variable or fallback */
+  font-weight: 600; /* Bolder for active tab */
+  border-bottom-color: var(--imessage-blue, #007aff);
+  /* background-color: var(--sidebar-bg); */ /* Removed to let tab bar bg show or be distinct */
+}
+
+/* Header styles (now primarily for the close button) */
+.add-contact-modal__header {
+  display: flex;
+  justify-content: flex-end; /* Align close button to the right */
+  align-items: center;
+  padding: 8px 15px; /* Reduced padding as it's mostly for the close button */
+  background-color: var(--sidebar-bg); 
+  /* border-bottom: 1px solid var(--border-color); */ /* Optional: if needed for separation */
+  min-height: 40px; /* Ensure some height */
+}
+
+/* H2 was removed from JSX, so styles for it are not strictly needed here anymore */
+/* .add-contact-modal__header h2 { ... } */
+
+.add-contact-modal__close-button {
+  background: none;
+  border: none;
+  font-size: 1.7rem; /* Adjusted size */
+  font-weight: normal; /* Reset from bold if previously set */
+  color: var(--secondary-text-color, #8e8e93);
+  cursor: pointer;
+  padding: 5px; /* Added padding for easier click */
+  line-height: 1;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.add-contact-modal__close-button:hover {
+  color: var(--text-color);
+  background-color: var(--hover-bg-color, rgba(0,0,0,0.05));
+}
+
+/* Body styles (content of each tab) */
+.add-contact-modal__body {
+  padding: 20px;
+  color: var(--text-color);
+  background-color: var(--sidebar-bg);
+  /* max-height: 60vh; */ /* Consider for very long content */
+  /* overflow-y: auto; */
+}
+
+.user-search-form {
+  display: flex;
+  margin-bottom: 20px; /* Increased margin */
+}
+
+.user-search-input {
+  flex-grow: 1;
+  padding: 12px 15px; /* Increased padding */
+  border: 1px solid var(--border-color);
+  border-radius: 6px 0 0 6px; /* Slightly more rounded */
+  font-size: 1rem;
+  background-color: var(--chat-bg); /* Using existing variable */
+  color: var(--text-color);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.user-search-input:focus {
+  outline: none;
+  border-color: var(--imessage-blue);
+  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2); /* Subtle focus ring */
+}
+
+.user-search-button {
+  padding: 12px 18px; /* Increased padding */
+  border: 1px solid var(--imessage-blue);
+  background-color: var(--imessage-blue);
+  color: white;
+  border-radius: 0 6px 6px 0; /* Slightly more rounded */
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+.user-search-button:hover {
+  background-color: var(--imessage-blue-darker, #0056b3);
+}
+.user-search-button:disabled {
+  background-color: var(--disabled-bg-color, #cccccc);
+  border-color: var(--disabled-bg-color, #cccccc);
+  color: var(--disabled-text-color, #666666);
+  cursor: not-allowed;
+}
+
+.search-message {
+  text-align: center;
+  color: var(--secondary-text-color);
+  margin: 15px 0; /* Adjusted margin */
+  padding: 8px;
+  /* background-color: var(--chat-bg); */ /* Optional background */
+  /* border-radius: 4px; */
+}
+
+.search-results-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 250px; /* Adjusted max height */
+  overflow-y: auto;
+}
+
+.search-result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 5px; /* Adjusted padding */
+  border-bottom: 1px solid var(--border-color-light, var(--border-color)); /* Fallback for border-color-light */
+}
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.search-result-item .user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px; /* Added gap between name and username */
+}
+.search-result-item .user-name {
+  font-weight: 500;
+  color: var(--text-color);
+}
+.search-result-item .user-username {
+  font-size: 0.88rem; /* Slightly adjusted size */
+  color: var(--secondary-text-color);
+}
+
+.search-result-item .add-button {
+  padding: 7px 14px; /* Adjusted padding */
+  background-color: var(--imessage-green, #34c759);
+  color: white;
+  border: none;
+  border-radius: 15px; /* More rounded button */
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+.search-result-item .add-button:hover {
+  background-color: var(--imessage-green-darker, #2ca349);
+}
+.search-result-item .add-button:disabled {
+  background-color: var(--disabled-bg-color, #cccccc);
+  color: var(--disabled-text-color, #666666); /* Text color for disabled state */
+  cursor: not-allowed;
+}
+
+/* Styles for the notifications tab content (placeholder) */
+.notifications-tab-content {
+  padding: 30px 20px; /* Increased padding */
+  text-align: center;
+  color: var(--secondary-text-color);
+  min-height: 150px; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+} 

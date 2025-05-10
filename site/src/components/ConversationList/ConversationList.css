@@ -1,0 +1,68 @@
+.conversation-list-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+  border-bottom: 1px solid var(--border-color);
+  gap: 5px;
+}
+
+.conversation-search-input {
+  flex-grow: 1;
+  padding: 8px 12px;
+  border-radius: 18px;
+  border: 1px solid var(--border-color);
+  background-color: var(--secondary-background);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.conversation-search-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.view-mode-button,
+.add-conversation-button {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: 6px;
+  line-height: 1;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.view-mode-button:hover,
+.add-conversation-button:hover {
+  background-color: var(--hover-background);
+  color: var(--primary-color);
+}
+
+.view-mode-button.active {
+  color: var(--primary-color);
+}
+
+.conversation-list-items {
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+/* Placeholders styling */
+.loading-conversations-placeholder,
+.no-conversations-placeholder {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+} 

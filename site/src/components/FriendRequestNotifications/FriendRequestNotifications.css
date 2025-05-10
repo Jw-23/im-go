@@ -1,0 +1,98 @@
+/* FriendRequestNotifications.css */
+.friend-request-notifications {
+  padding: 10px 0; /* Add some vertical padding */
+  max-height: 300px; /* Limit height for scrollability */
+  overflow-y: auto;  /* Enable vertical scroll if content exceeds max-height */
+}
+
+.notifications-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.notification-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 5px; /* Add padding within each item */
+  border-bottom: 1px solid var(--border-color); /* Use theme variable */
+  gap: 10px; /* Add gap between info and actions */
+}
+
+.notification-item:last-child {
+  border-bottom: none; /* Remove border for the last item */
+}
+
+.notification-info {
+  display: flex;
+  flex-direction: column; /* Stack name and time */
+  flex-grow: 1; /* Allow info section to take available space */
+  overflow: hidden; /* Prevent long names from breaking layout */
+}
+
+.requester-name {
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* Show ellipsis for very long names */
+  color: var(--text-primary); /* Use theme variable */
+}
+
+.request-time {
+  font-size: 0.8em;
+  color: var(--text-secondary); /* Use theme variable */
+}
+
+.notification-actions {
+  display: flex;
+  gap: 5px; /* Space between buttons */
+  flex-shrink: 0; /* Prevent action buttons from shrinking */
+}
+
+.action-button {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.2s ease;
+}
+
+.action-button.accept {
+  background-color: var(--primary-color); /* Use theme variable */
+  color: white;
+}
+
+.action-button.accept:hover:not(:disabled) {
+  background-color: var(--primary-darker); /* Darken on hover */
+}
+
+.action-button.reject {
+  background-color: var(--secondary-background); /* Use theme variable */
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.action-button.reject:hover:not(:disabled) {
+  background-color: var(--hover-background);
+}
+
+.action-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.notifications-error {
+  color: var(--error-color); /* Use theme variable */
+  font-size: 0.9em;
+  text-align: center;
+  padding: 10px;
+}
+
+/* Style for placeholder text */
+.friend-request-notifications > p {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 20px;
+}

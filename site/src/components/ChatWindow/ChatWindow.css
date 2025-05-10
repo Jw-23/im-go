@@ -1,0 +1,45 @@
+.chat-window {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--chat-bg);
+}
+
+.chat-window-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border-color);
+  background-color: #f7f7f7; /* Slightly off-white header like iMessage */
+}
+
+.chat-header-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-right: 10px;
+  object-fit: cover;
+}
+
+.chat-header-name {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.message-list {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+.message-bubble.sender {
+  align-self: flex-end;
+  background: #1976d2; /* 蓝色 */
+  color: #fff;
+}
+.message-text{
+  color: #fff;
+}
+/* Styles for individual messages will be in MessageBubble.css */ 

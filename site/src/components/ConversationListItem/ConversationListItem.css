@@ -1,0 +1,66 @@
+.conversation-list-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.conversation-list-item:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.conversation-list-item.selected {
+  background-color: var(--imessage-blue);
+  color: var(--imessage-text-light);
+}
+
+.conversation-list-item.selected .conversation-timestamp,
+.conversation-list-item.selected .conversation-last-message {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.conversation-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 12px;
+  object-fit: cover;
+}
+
+.conversation-details {
+  flex-grow: 1;
+  overflow: hidden; /* Prevent long text from breaking layout */
+}
+
+.conversation-name-time {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2px;
+}
+
+.conversation-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.conversation-list-item.selected .conversation-name {
+  color: var(--imessage-text-light);
+}
+
+.conversation-timestamp {
+  font-size: 0.75rem;
+  color: #8e8e93;
+  margin-left: 5px;
+  white-space: nowrap;
+}
+
+.conversation-last-message {
+  font-size: 0.85rem;
+  color: #3c3c43;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+} 
