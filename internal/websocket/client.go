@@ -188,19 +188,9 @@ func ServeWsPerConnection(hub *Hub, rawInputHandler func(ctx context.Context, in
 	upgrader := websocket.Upgrader{
 		ReadBufferSize:  int(wsCfg.MaxMessageSizeBytes),
 		WriteBufferSize: int(wsCfg.MaxMessageSizeBytes),
+		// 生产侧控制源
 		CheckOrigin: func(r *http.Request) bool {
-			origin := r.Header.Get("Origin")
-			// 示例：允许特定的生产域名和开发环境的源
-			allowedOrigins := map[string]bool{
-				"https://localhost:80":  true,
-				"http://localhost:8081": true, // 如果您还希望本地开发时能连接
-				// 可以根据需要添加更多允许的源
-			}
-			_, ok := allowedOrigins[origin]
-			if !ok {
-				log.Printf("WebSocket connection from disallowed origin: %s", origin)
-			}
-			return ok
+			return true
 		},
 	}
 
