@@ -5,9 +5,12 @@ import { useMessages } from './useMessages';
 import { useAuth } from '../contexts/AuthContext';
 import { createGroup, fixGroupConversationParticipants } from '../services/api';
 
+// 定时刷新配置（毫秒）
+const AUTO_REFRESH_INTERVAL = 30000; // 30秒
+
 export function useChatManager() {
   const { currentUser } = useAuth();
-  const { lastMessage, isConnected, sendMessage, websocketError } = useWebSocket();
+  const { lastMessage, isConnected, sendMessage, websocketError, reconnect } = useWebSocket();
   const { 
     conversations, 
     selectedConversation, 
@@ -34,6 +37,10 @@ export function useChatManager() {
   // 防止重复加载
   const loadingConversationRef = useRef(null);
   const initialLoadCompletedRef = useRef({});
+
+  // 添加定时刷新逻辑
+  const autoRefreshTimerRef = useRef(null);
+  const lastRefreshTimeRef = useRef(Date.now());
 
   // 当选择会话改变时加载消息
   useEffect(() => {
@@ -77,18 +84,128 @@ export function useChatManager() {
       
       // 更新会话的最后一条消息
       updateConversationWithMessage(lastMessage.conversationId, lastMessage);
+      
+      // 检查是否需要自动刷新会话列表
+      // 如果是不在当前选中会话的新消息，将触发自动刷新
+      if (!selectedConversation || lastMessage.conversationId !== selectedConversation.id) {
+        // 自动刷新会话列表
+        console.log('[useChatManager] 收到新消息，自动刷新会话列表');
+        refreshConversations();
+        
+        // 显示系统通知（如果浏览器支持）
+        showNotificationForNewMessage(lastMessage);
+      }
     } else {
       console.warn('[useChatManager] 收到缺少 conversationId 的 WebSocket 消息:', lastMessage);
     }
-  }, [lastMessage, addMessage, updateConversationWithMessage]);
+  }, [lastMessage, addMessage, updateConversationWithMessage, selectedConversation, refreshConversations]);
+
+  // 显示新消息通知
+  const showNotificationForNewMessage = useCallback((message) => {
+    // 检查是否已授权通知权限
+    if (!("Notification" in window)) {
+      console.log('[useChatManager] 浏览器不支持系统通知');
+      return;
+    }
+    
+    // 如果通知权限未决定，请求权限
+    if (Notification.permission === 'default') {
+      Notification.requestPermission();
+      return;
+    }
+    
+    // 如果通知权限已授权，显示通知
+    if (Notification.permission === 'granted') {
+      // 找到对应的会话以获取发送者信息
+      const conversation = conversations.find(c => c.id === message.conversationId);
+      if (!conversation) return;
+      
+      // 确定通知标题
+      let title;
+      if (conversation.type === 'private') {
+        title = `新消息来自: ${conversation.name || '私聊'}`;
+      } else {
+        title = `群组消息: ${conversation.name || '群聊'}`;
+      }
+      
+      // 创建通知
+      const notification = new Notification(title, {
+        body: message.content.length > 50 ? message.content.substring(0, 50) + '...' : message.content,
+        icon: conversation.avatar || '/logo.png', // 默认使用应用logo
+        tag: message.conversationId, // 标记通知，相同会话只保留最新的通知
+      });
+      
+      // 点击通知时，切换到对应会话
+      notification.onclick = () => {
+        window.focus(); // 聚焦到窗口
+        if (conversation) {
+          selectConversation(conversation);
+        }
+        notification.close();
+      };
+      
+      // 3秒后自动关闭通知
+      setTimeout(() => {
+        notification.close();
+      }, 3000);
+    }
+  }, [conversations, selectConversation]);
 
   // 处理 WebSocket 错误
   useEffect(() => {
     if (websocketError) {
       console.error('[useChatManager] WebSocket 错误:', websocketError);
       // 这里可以添加错误处理逻辑，如通知、重试等
+      // 如果websocket断开连接，尝试重新连接
+      if (!isConnected) {
+        console.log('[useChatManager] WebSocket断开连接，尝试重新连接...');
+        // 可以在5秒后尝试刷新会话列表
+        const reconnectTimer = setTimeout(() => {
+          refreshConversations();
+        }, 5000);
+        
+        return () => {
+          clearTimeout(reconnectTimer);
+        };
+      }
     }
-  }, [websocketError]);
+  }, [websocketError, isConnected, refreshConversations]);
+
+  // 设置定时刷新
+  useEffect(() => {
+    if (!currentUser) return;
+
+    // 清除旧的定时器
+    if (autoRefreshTimerRef.current) {
+      clearInterval(autoRefreshTimerRef.current);
+    }
+
+    // 创建新的定时刷新
+    autoRefreshTimerRef.current = setInterval(() => {
+      // 如果WebSocket连接断开或者距离上次刷新超过30秒，则刷新会话列表
+      const now = Date.now();
+      if (!isConnected || now - lastRefreshTimeRef.current >= AUTO_REFRESH_INTERVAL) {
+        console.log('[useChatManager] 定时刷新会话列表', 
+                    isConnected ? '（定时刷新）' : '（WebSocket断开，自动刷新）');
+        refreshConversations().then(() => {
+          lastRefreshTimeRef.current = Date.now();
+        });
+
+        // 如果WebSocket断开，尝试重连
+        if (!isConnected && reconnect) {
+          console.log('[useChatManager] 检测到WebSocket断开，尝试重连');
+          reconnect();
+        }
+      }
+    }, AUTO_REFRESH_INTERVAL);
+
+    return () => {
+      if (autoRefreshTimerRef.current) {
+        clearInterval(autoRefreshTimerRef.current);
+        autoRefreshTimerRef.current = null;
+      }
+    };
+  }, [currentUser, isConnected, refreshConversations, reconnect]);
 
   // 发送消息
   const handleSendMessage = useCallback((content) => {
@@ -300,6 +417,7 @@ export function useChatManager() {
     initiateChatWithContact,
     refreshConversations,
     createGroup: handleCreateGroup,
+    reconnectWebSocket: reconnect, // 暴露WebSocket重连函数
     
     // 消息管理
     clearMessages,
