@@ -81,18 +81,13 @@ im-go
 
 ```bash
 # 克隆仓库
-git clone https://github.com/yourusername/im-go.git
+git clone https://github.com/Jw-23/im-go
 cd im-go
 
-# 编译服务器
-go build -o ./bin/apiserver ./cmd/apiserver
-go build -o ./bin/chatserver ./cmd/chatserver
+# 编译并且运行服务器
+bash  deployments/start_chatserver_local.sh
+bash  deployments/start_apiserver_local.sh 
 
-# 运行API服务器
-./bin/apiserver
-
-# 运行聊天服务器
-./bin/chatserver
 ```
 
 ### 客户端
