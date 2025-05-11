@@ -1,84 +1,188 @@
+/* 添加移动设备viewport优化 */
+@viewport {
+  width: device-width;
+  initial-scale: 1;
+}
+
 :root {
   --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   
-  /* Light Theme (Default) */
-  --background-color: #ffffff; 
-  --text-color: #1c1c1e; /* iOS System Gray (Dark) */
-  --secondary-text-color: #8e8e93; /* iOS System Gray 2 */
-  --sidebar-bg: #f2f2f7; /* iOS System Gray 6 */
-  --chat-bg: #ffffff;
-  --border-color: #d1d1d6; /* iOS System Gray 4 */
-  --hover-bg-color: #e9e9eb; /* Subtle hover for list items etc. */
-  --active-bg-color: #e0e0e2;
-
-  --imessage-blue: #007aff;
-  --imessage-blue-rgb: 0, 122, 255; /* Added for rgba() usage */
+  /* Colors (light theme default) */
+  --bg-color: #f8f9fa;
+  --text-color: #212529;
+  --header-text-color: #212529;
+  --border-color: #e9ecef;
+  --link-color: #007bff;
+  --link-hover-color: #0056b3;
+  
+  /* iMessage-like colors */
+  --imessage-blue: #0b93f6;
   --imessage-gray: #e5e5ea;
-  --imessage-text-light: #ffffff;
-  --imessage-text-dark: #000000;
-
+  --imessage-text-dark: #1f1f21;  /* for light backgrounds */
+  --imessage-text-light: #ffffff; /* for dark backgrounds */
+  
+  /* Chat specific */
+  --sidebar-bg: var(--bg-color);
+  --chat-bg: #ffffff;
+  --message-sent-bg: var(--imessage-blue);
+  --message-received-bg: var(--imessage-gray);
+  
+  /* Action buttons */
   --primary-button-bg: var(--imessage-blue);
   --primary-button-text: var(--imessage-text-light);
+
+  /* 核心颜色变量补充 */
+  --background: #f5f5f5;
+  --text-primary: #333333;
+  --text-secondary: #757575;
+  --primary-color: #4285f4;
+  --primary-color-light: #64b5f6;
+  --primary-color-dark: #1976d2;
+  --accent-color: #ff4081;
+  --hover-background: #e8eaf6;
 }
 
-html[data-theme='dark'] {
-  --background-color: #000000;
-  --text-color: #f2f2f7; /* iOS System Gray 6 (Light for dark mode) */
-  --secondary-text-color: #8d8d92; /* iOS System Gray (Dark mode) */
-  --sidebar-bg: #1c1c1e; /* iOS System Dark Gray */
-  --chat-bg: #000000;
-  --border-color: #3a3a3c; /* iOS System Gray 2 (Dark mode) */
-  --hover-bg-color: #2c2c2e; /* Subtle hover for list items etc. */
-  --active-bg-color: #38383a;
-
-  --imessage-blue: #0a84ff; /* Slightly brighter blue for dark mode */
-  --imessage-blue-rgb: 10, 132, 255; /* Added for rgba() usage */
-  --imessage-gray: #3a3a3c;
+/* 暗色主题 */
+[data-theme="dark"] {
+  --bg-color: #222222;
+  --text-color: #e9ecef;
+  --header-text-color: #f8f9fa;
+  --border-color: #495057;
+  --link-color: #8ab4f8;
+  --link-hover-color: #aecbfa;
+  
+  /* iMessage-like colors in dark mode */
+  --imessage-blue: #0a74b9; /* darker blue */
+  --imessage-gray: #3d3d41; /* darker gray */
   /* --imessage-text-light remains white */
   /* --imessage-text-dark for outgoing bubbles is still black on light gray, but that light gray changes */
+
+  /* 暗色主题变量补充 */
+  --background: #121212;
+  --text-primary: #f5f5f5;
+  --text-secondary: #b0b0b0;
+  --sidebar-bg: #1e1e1e;
+  --chat-bg: #121212;
+  --message-sent-bg: #0d47a1;
+  --message-received-bg: #2d2d2d;
+  --message-text: #f5f5f5;
+  --hover-background: #2d2d2d;
 }
 
-/* Basic Reset */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
+/* 全局样式重置 */
+* {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  height: 100%;
+  -webkit-text-size-adjust: 100%; /* 防止iOS在横向时自动调整字体大小 */
 }
 
 body {
   font-family: var(--font-family-sans);
-  background-color: var(--background-color);
+  background-color: var(--bg-color);
   color: var(--text-color);
-  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow: hidden; /* Prevent body scroll with app layout */
-}
-
-#root {
+  margin: 0;
+  padding: 0;
   height: 100vh;
-  display: flex;
-  flex-direction: column;
+  width: 100vw;
 }
 
-/* Basic scrollbar styling */
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* 移除按钮的默认外观 */
+button {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* 移除链接的默认外观 */
+a {
+  text-decoration: none;
+  color: var(--link-color);
+}
+
+/* 表单元素样式重置 */
+input, textarea, button, select {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* 滚动条样式 */
 ::-webkit-scrollbar {
   width: 8px;
-  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 4px;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
+  background-color: rgba(155, 155, 155, 0.5);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.3);
+  background-color: rgba(155, 155, 155, 0.7);
+}
+
+/* 触摸设备优化 */
+@media (hover: none) {
+  /* 增大点击目标尺寸 */
+  button, 
+  .contact-item,
+  .conversation-item,
+  .settings-button {
+    min-height: 44px; /* Apple推荐的最小可触摸尺寸 */
+  }
+  
+  /* 禁用悬停效果，改为active状态 */
+  button:hover,
+  .contact-item:hover,
+  .conversation-item:hover {
+    background-color: transparent;
+  }
+  
+  button:active,
+  .contact-item:active,
+  .conversation-item:active {
+    background-color: var(--hover-background);
+  }
+}
+
+/* 移动设备文本适配 */
+@media (max-width: 576px) {
+  html {
+    font-size: 15px; /* 略小的字体大小，使内容在小屏幕上更合适 */
+  }
+  
+  body {
+    -webkit-overflow-scrolling: touch; /* 提升iOS滚动体验 */
+  }
+  
+  input, textarea, select {
+    font-size: 16px; /* 防止iOS自动放大 */
+  }
+}
+
+/* 设备方向变化优化 */
+@media screen and (orientation: landscape) and (max-height: 500px) {
+  .sidebar-header,
+  .message-input-container {
+    padding: 5px;
+  }
+  
+  .sidebar-header .tabs button {
+    padding: 4px 0;
+  }
 } 

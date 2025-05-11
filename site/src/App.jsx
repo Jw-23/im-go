@@ -61,11 +61,11 @@ function App() {
         } else {
           console.error('获取联系人列表失败:', result.error);
       }
-      } catch (error) {
+    } catch (error) {
         console.error('获取联系人列表出错:', error);
     } finally {
         setIsLoadingContacts(false);
-      }
+    }
     };
 
     fetchContacts();
@@ -83,7 +83,7 @@ function App() {
   const openGroupInfoModal = (groupId) => {
     setSelectedGroupId(groupId);
     setIsGroupInfoModalOpen(true);
-  };
+      };
   const closeGroupInfoModal = () => setIsGroupInfoModalOpen(false);
   
   // 创建群聊
@@ -92,7 +92,7 @@ function App() {
       console.error('未登录，无法创建群组');
       return;
     }
-    
+
     try {
       // 使用useChatManager中的createGroup功能
       const result = await createGroup(groupData);
@@ -102,7 +102,7 @@ function App() {
         // 这里可以添加错误通知
         return;
       }
-      
+
       console.log('群聊创建成功:', result.data);
       // 关闭创建群聊模态框
       setIsCreateGroupModalOpen(false);
@@ -139,7 +139,7 @@ function App() {
     try {
       console.log('修复群组会话:', groupId);
       const result = await fixGroupConversationParticipants(groupId);
-      
+
       if (result.success) {
         console.log('修复成功:', result.data);
         alert('群组会话修复成功，现在可以正常接收群消息了！');

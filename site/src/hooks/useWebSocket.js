@@ -1,15 +1,22 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
-const CHAT_SERVER_URL = 'ws://124.71.77.122:8080'; // 从 App.jsx 迁移
-const WEBSOCKET_PATH = '/ws/chat';             // 从 App.jsx 迁移
+// 检查是否为开发环境
+const isDevEnvironment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+// 根据环境动态选择WebSocket服务器地址
+const CHAT_SERVER_URL = isDevEnvironment 
+  ? `ws://${window.location.hostname}:8080` // 开发环境使用同源主机名
+  : 'ws://124.71.77.122:8080';   // 生产环境使用配置的服务器
+
+const WEBSOCKET_PATH = '/ws/chat';
 
 // 重连配置
 const MAX_RECONNECT_ATTEMPTS = 10;  // 最大重连次数
 const BASE_RECONNECT_DELAY = 1000;  // 初始重连延迟（毫秒）
 const MAX_RECONNECT_DELAY = 30000;  // 最大重连延迟（毫秒）
 
-function useWebSocket() {
+function useWebSocket(showNotification) {
   const [websocket, setWebsocket] = useState(null);
   const [lastMessage, setLastMessage] = useState(null); // 用于接收最新消息
   const [isConnected, setIsConnected] = useState(false);
@@ -43,6 +50,32 @@ function useWebSocket() {
         const message = JSON.parse(event.data);
         console.log('[useWebSocket] 收到WebSocket消息:', message);
         setLastMessage(message); // 更新收到的最新消息
+        
+        // 如果有提供通知功能，并且是新消息，则发送通知
+        if (showNotification && message.type === 'message') {
+          // 检查页面是否在前台
+          if (document.visibilityState !== 'visible') {
+            const sender = message.sender && message.sender.username ? message.sender.username : '未知用户';
+            const conversationType = message.conversation_type || 'private';
+            const conversationName = message.conversation_name || (conversationType === 'group' ? '群聊' : '');
+            
+            const title = conversationType === 'group' 
+              ? `${conversationName}的新消息` 
+              : `${sender}发来消息`;
+              
+            const notificationOptions = {
+              body: message.content || '收到一条新消息',
+              tag: `conversation-${message.conversation_id}`,
+              data: {
+                url: '/',
+                conversationId: message.conversation_id,
+                messageId: message.id
+              }
+            };
+            
+            showNotification(title, notificationOptions);
+          }
+        }
       } catch (e) {
         console.error('[useWebSocket] 解析WebSocket消息出错:', e);
         setError(e); // 解析错误也视为一种错误状态
@@ -106,7 +139,7 @@ function useWebSocket() {
     };
 
     return wsInstance;
-  }, [token, currentUser]);
+  }, [token, currentUser, showNotification]);
 
   // WebSocket连接管理
   useEffect(() => {
@@ -187,9 +220,11 @@ function useWebSocket() {
       console.log('[useWebSocket] 发送WebSocket消息:', messagePayload);
       try {
         websocket.send(JSON.stringify(messagePayload));
+        return true; // 返回发送成功标志
       } catch (e) {
         console.error("[useWebSocket] 发送消息出错:", e);
         setError(e); // 发送错误也记录
+        return false; // 返回发送失败标志
       }
     } else {
       const errMsg = '[useWebSocket] 无法发送消息。WebSocket未打开或不可用.';
@@ -200,6 +235,7 @@ function useWebSocket() {
       if (!isConnected && token && currentUser) {
         reconnect();
       }
+      return false; // 返回发送失败标志
     }
   }, [websocket, isConnected, token, currentUser, reconnect]);
 
@@ -208,7 +244,8 @@ function useWebSocket() {
     isConnected, 
     sendMessage, 
     websocketError: error, 
-    reconnect // 暴露手动重连函数
+    reconnect, // 暴露手动重连函数
+    serverUrl: CHAT_SERVER_URL // 暴露服务器URL以便调试
   };
 }
 

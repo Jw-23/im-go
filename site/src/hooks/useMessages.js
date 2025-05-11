@@ -183,18 +183,18 @@ export function useMessages() {
   }, []);
 
   // 创建一个新的乐观消息并添加到状态中
-  const createOptimisticMessage = useCallback((content, conversationId) => {
+  const createOptimisticMessage = useCallback((conversationId, content, messageType = 'text', senderId = null) => {
     if (!content || !conversationId || !currentUser) {
-      console.warn('[useMessages] 无法创建乐观消息: 参数不足', { content, conversationId, currentUser });
+      console.warn('[useMessages] 无法创建乐观消息: 参数不足', { conversationId, content, currentUser });
       return null;
     }
 
     const timestamp = new Date().toISOString();
     const optimisticMessage = {
       id: `msg_${Date.now()}`,
-      type: 'text',
+      type: messageType,
       content,
-      senderId: currentUser.id.toString(),
+      senderId: (senderId || currentUser.id).toString(),
       conversationId,
       timestamp,
       status: 'sending'

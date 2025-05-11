@@ -72,5 +72,19 @@
   "failed_to_reject_friend_request": "Failed to reject friend request",
   "show_conversations": "Show Conversations",
   "type_your_message_placeholder": "Type your message here...",
-  "search_contacts": "Search contacts"
+  "search_contacts": "Search contacts",
+  "notifications": "Notifications",
+  "notifications.pushNotifications": "Push Notifications",
+  "notifications.enabled": "Enabled",
+  "notifications.enable": "Enable Notifications",
+  "notifications.blocked": "Blocked by Browser",
+  "notifications.blockedByBrowser": "Blocked",
+  "notifications.notEnabled": "Not Enabled",
+  "notifications.unsupported": "Your browser doesn't support notifications",
+  "notifications.permissionDenied": "You've denied notification permissions. To enable, please allow notifications for this site in your browser settings.",
+  "notifications.browserNotSupported": "Your browser doesn't support push notifications.",
+  "notifications.enableInstructions": "To enable notifications, please find this website in your browser settings and allow notification permissions.",
+  "notifications.sendTest": "Send Test Notification",
+  "notifications.testTitle": "Test Notification",
+  "notifications.testBody": "This is a test notification. You've successfully set up notifications!"
 } 

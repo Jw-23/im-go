@@ -2,6 +2,9 @@ import React from 'react';
 import {
   FaFileAlt, // Icon for generic files
   FaImage,   // Icon for images
+  FaCheckCircle, // 发送成功图标
+  FaExclamationCircle, // 发送失败图标
+  FaClock // 发送中图标
 } from 'react-icons/fa';
 import './MessageBubble.css';
 
@@ -45,12 +48,30 @@ const MessageBubble = ({ message, isSender }) => {
     }
   };
 
+  // 渲染消息状态指示器
+  const renderStatusIndicator = () => {
+    if (!isSender) return null; // 只有发送者的消息才显示状态
+
+    switch (message.status) {
+      case 'sending':
+        return <FaClock className="message-status-icon sending" title="发送中" />;
+      case 'failed':
+        return <FaExclamationCircle className="message-status-icon failed" title="发送失败" />;
+      case 'sent':
+      default:
+        return <FaCheckCircle className="message-status-icon sent" title="已发送" />;
+    }
+  };
+
   return (
     <div className={bubbleClass}>
       <div className="message-content">
         {renderContent()}
       </div>
-      <span className={timeClass}>{formatTime(message.timestamp)}</span>
+      <div className="message-meta">
+        <span className={timeClass}>{formatTime(message.timestamp)}</span>
+        {renderStatusIndicator()}
+      </div>
     </div>
   );
 };

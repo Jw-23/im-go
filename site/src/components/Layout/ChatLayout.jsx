@@ -17,6 +17,20 @@ const UsersIcon = () => (
   </svg>
 );
 
+// 菜单图标组件
+const MenuIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+    <path fillRule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
+  </svg>
+);
+
+// 关闭图标组件
+const CloseIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+  </svg>
+);
+
 // 聊天应用的主要布局组件
 const ChatLayout = ({ 
   // 状态属性
@@ -44,6 +58,20 @@ const ChatLayout = ({
   t
 }) => {
   const [activeTab, setActiveTab] = useState('chats');
+  const [sidebarVisible, setSidebarVisible] = useState(false);
+
+  const toggleSidebar = () => {
+    setSidebarVisible(!sidebarVisible);
+  };
+
+  const closeSidebar = () => {
+    setSidebarVisible(false);
+  };
+
+  const handleSelectConversation = (conversation) => {
+    onSelectConversation(conversation);
+    closeSidebar(); // 在移动设备上选择会话后关闭侧边栏
+  };
 
   // 联系人列表组件
   const ContactListComponent = () => (
@@ -69,7 +97,10 @@ const ChatLayout = ({
             <div 
               key={contact.id} 
               className="contact-item"
-              onClick={() => onInitiateChatWithContact(contact.id)}
+              onClick={() => {
+                onInitiateChatWithContact(contact.id);
+                closeSidebar(); // 在移动设备上选择联系人后关闭侧边栏
+              }}
             >
               <img 
                 src={contact.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent((contact.name || contact.username || 'User').charAt(0))}&size=40&background=random&color=fff`} 
@@ -89,7 +120,8 @@ const ChatLayout = ({
 
   return (
     <div className="app-container">
-      <aside className="sidebar">
+      {/* 侧边栏 */}
+      <aside className={`sidebar ${sidebarVisible ? 'active' : ''}`}>
         <div className="sidebar-header">
           <div className="tabs">
             <button 
@@ -113,17 +145,27 @@ const ChatLayout = ({
         {activeTab === 'chats' ? (
           <ConversationList 
             conversations={conversations} 
-            onSelectConversation={onSelectConversation}
+            onSelectConversation={handleSelectConversation}
             selectedConversationId={selectedConversation?.id}
             isLoading={isLoadingConversations}
             onOpenAddContactModal={onOpenAddContactModal}
-            onInitiateChatWithContact={onInitiateChatWithContact}
+            onInitiateChatWithContact={(contactId) => {
+              onInitiateChatWithContact(contactId);
+              closeSidebar(); // 在移动设备上开始聊天后关闭侧边栏
+            }}
           />
         ) : (
           <ContactListComponent />
         )}
         <SettingsButton onClick={onOpenSettings} />
       </aside>
+
+      {/* 侧边栏遮罩层 - 移动端点击空白处关闭侧边栏 */}
+      <div 
+        className={`sidebar-overlay ${sidebarVisible ? 'active' : ''}`}
+        onClick={closeSidebar}
+      ></div>
+
       <main className="chat-area">
         {selectedConversation ? (
           <ChatWindow 
@@ -148,6 +190,11 @@ const ChatLayout = ({
           </div>
         )}
       </main>
+
+      {/* 移动端菜单切换按钮 */}
+      <button className="mobile-nav-toggle" onClick={toggleSidebar}>
+        {sidebarVisible ? <CloseIcon /> : <MenuIcon />}
+      </button>
     </div>
   );
 };

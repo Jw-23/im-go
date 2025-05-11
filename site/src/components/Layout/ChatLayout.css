@@ -51,7 +51,7 @@
   justify-content: center;
   padding: 8px;
   background-color: var(--primary-color);
-  color: #000;
+  color: var(--text-color);
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -172,6 +172,7 @@
   flex-grow: 1;
   display: flex;
   flex-direction: column;
+
 }
 
 .chat-header-members {
@@ -274,10 +275,38 @@
   text-decoration: underline;
 }
 
+/* 移动视图导航控制 */
+.mobile-nav-toggle {
+  display: none;
+}
+
+.sidebar-overlay {
+  display: none;
+}
+
 /* 响应式调整 */
+@media (max-width: 992px) {
+  .sidebar {
+    width: 270px;
+  }
+}
+
 @media (max-width: 768px) {
   .sidebar {
-    width: 250px;
+    width: 240px;
+  }
+  
+  .contact-avatar {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .contact-name {
+    font-size: 0.9rem;
+  }
+  
+  .contact-status {
+    font-size: 0.75rem;
   }
 }
 
@@ -286,11 +315,93 @@
     flex-direction: column;
   }
   
+  .mobile-nav-toggle {
+    display: block;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    border: none;
+    font-size: 1.5rem;
+  }
+  
+  .app-container {
+    position: relative;
+  }
+  
   .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 80%;
+    height: 100vh;
+    z-index: 100;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  
+  .sidebar.active {
+    transform: translateX(0);
+  }
+  
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: 70px;
-    flex-direction: row;
-    border-right: none;
-    border-bottom: 1px solid var(--border-color);
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 99;
+  }
+  
+  .sidebar-overlay.active {
+    display: block;
+  }
+  
+  .chat-area {
+    width: 100%;
+    height: 100vh;
+  }
+}
+
+/* 手机竖屏模式下的特殊调整 */
+@media (max-width: 480px) {
+  .auth-prompt {
+    padding: 25px;
+  }
+  
+  .auth-prompt h1 {
+    font-size: 1.5rem;
+  }
+  
+  .auth-prompt p {
+    font-size: 1rem;
+  }
+  
+  .contact-item {
+    padding: 8px 5px;
+  }
+  
+  .contacts-header span {
+    font-size: 0.8rem;
+  }
+  
+  .add-contact-btn.small {
+    font-size: 0.7rem;
+  }
+  
+  .create-group-btn {
+    font-size: 0.8rem;
+    padding: 6px;
   }
 } 

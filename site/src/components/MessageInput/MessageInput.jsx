@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import './MessageInput.css';
 import { FaPaperPlane } from 'react-icons/fa'; // Send icon
 
-const MessageInput = ({ onSendMessage, disabled = false }) => {
+const MessageInput = ({ onSendMessage, disabled = false, conversationId }) => {
   const { t } = useTranslation();
   const [messageText, setMessageText] = useState('');
 
@@ -16,8 +16,8 @@ const MessageInput = ({ onSendMessage, disabled = false }) => {
     e.preventDefault(); // Prevent form submission if wrapped in form
     const trimmedMessage = messageText.trim();
     if (trimmedMessage && !disabled) {
-      console.log("[MessageInput.jsx]","trimmedMessage:",trimmedMessage)
-      onSendMessage(trimmedMessage); // Pass the text content up
+      console.log("[MessageInput.jsx]", "trimmedMessage:", trimmedMessage, "conversationId:", conversationId);
+      onSendMessage(trimmedMessage, conversationId); // 传递消息内容和会话ID
       setMessageText(''); // Clear input after sending
     }
   };

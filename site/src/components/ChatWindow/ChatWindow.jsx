@@ -218,9 +218,10 @@ function ChatWindow({
           )}
         </div>
         <MessageInput 
-          onSendMessage={onSendMessage} 
+          onSendMessage={(content) => onSendMessage(content, conversation.id)} 
           disabled={!websocketConnected} 
           conversationType={isGroup ? 'group' : 'private'}
+          conversationId={conversation.id}
         />
       </div>
     </div>

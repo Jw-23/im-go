@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './SettingsModal.css';
 import ThemeSwitcher from '../ThemeSwitcher/ThemeSwitcher';
 import LanguageSwitcher from '../LanguageSwitcher/LanguageSwitcher';
+import NotificationSettings from './NotificationSettings';
 import LoginForm from '../Auth/LoginForm';
 import RegisterForm from '../Auth/RegisterForm';
 import { useAuth } from '../../contexts/AuthContext';
@@ -33,6 +34,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
   const navItems = [
     { key: 'language', label: t('language') },
     { key: 'theme', label: t('theme') },
+    { key: 'notifications', label: t('notifications') },
     { key: 'account', label: t('account') },
     // Add more sections here if needed
     // { key: 'more', label: t('more_settings_placeholder_nav') } // Example for a new nav item
@@ -69,6 +71,12 @@ const SettingsModal = ({ isOpen, onClose }) => {
             {activeSection === 'theme' && (
               <div className="settings-modal__section theme-settings-section">
                 <ThemeSwitcher />
+              </div>
+            )}
+            
+            {activeSection === 'notifications' && (
+              <div className="settings-modal__section notification-settings-section">
+                <NotificationSettings />
               </div>
             )}
 

@@ -1,0 +1,10 @@
+{
+  "assets": [
+    "/",
+    "/index.html",
+    "/favicon.ico",
+    "/assets/index.css",
+    "/assets/index.js"
+  ],
+  "version": "1.0.0"
+} 

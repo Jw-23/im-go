@@ -30,7 +30,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--text-color);
+  color: var(--text-secondary);
   flex-grow: 1; /* 让名称占据中间剩余空间 */
 }
 

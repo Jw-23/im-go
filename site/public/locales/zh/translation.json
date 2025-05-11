@@ -72,5 +72,19 @@
   "failed_to_reject_friend_request": "拒绝好友请求失败",
   "show_conversations": "显示会话",
   "type_your_message_placeholder": "在此输入您的消息...",
-  "search_contacts": "搜索通讯录"
+  "search_contacts": "搜索通讯录",
+  "notifications": "消息通知",
+  "notifications.pushNotifications": "推送通知",
+  "notifications.enabled": "已启用",
+  "notifications.enable": "启用通知",
+  "notifications.blocked": "已被浏览器阻止",
+  "notifications.blockedByBrowser": "浏览器已阻止",
+  "notifications.notEnabled": "未启用通知",
+  "notifications.unsupported": "您的浏览器不支持消息通知",
+  "notifications.permissionDenied": "您已拒绝通知权限。如需启用，请在浏览器设置中允许本站发送通知。",
+  "notifications.browserNotSupported": "您的浏览器不支持推送通知功能。",
+  "notifications.enableInstructions": "要启用通知，请在浏览器设置中找到本网站的权限设置，并允许通知权限。",
+  "notifications.sendTest": "发送测试通知",
+  "notifications.testTitle": "测试通知",
+  "notifications.testBody": "这是一条测试通知，您已成功设置通知功能！"
 }
