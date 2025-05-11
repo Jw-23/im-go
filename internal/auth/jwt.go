@@ -1,12 +1,14 @@
 package auth
 
 import (
+	"context"
 	"fmt"
 	"time"
 
 	"im-go/internal/config" // 用于 JWT 配置常量，或者直接传递配置值
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 // Claims 是 JWT 中的自定义声明，嵌入了 jwt.RegisteredClaims。
@@ -21,12 +23,19 @@ type Claims struct {
 // jwtKey 是用于签发令牌的密钥。
 // expiry 是令牌的有效期。
 func GenerateToken(userID uint, username string, authCfg config.AuthConfig) (string, error) {
+	// 生成 JWT ID (jti)
+	jwtID, err := uuid.NewRandom()
+	if err != nil {
+		return "", fmt.Errorf("生成 JWT ID 失败: %w", err)
+	}
+
 	expirationTime := time.Now().Add(authCfg.JWTExpiry)
 	claims := &Claims{
 		UserID:   userID,
 		Username: username,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
+			ID:        jwtID.String(), // 设置 JTI
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			Issuer:    "im-go-server", // 可以从配置中读取或硬编码
 		},
@@ -43,7 +52,8 @@ func GenerateToken(userID uint, username string, authCfg config.AuthConfig) (str
 // ValidateToken 验证给定的 JWT 字符串的有效性。
 // 如果令牌有效，它会返回 Claims。否则返回错误。
 // jwtKey 是用于验证令牌签名的密钥。
-func ValidateToken(tokenString string, jwtKey string) (*Claims, error) {
+// blacklist 是用于检查 Token 是否已被吊销的实例。
+func ValidateToken(ctx context.Context, tokenString string, jwtKey string, blacklist TokenBlacklist) (*Claims, error) {
 	claims := &Claims{}
 
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
@@ -59,7 +69,24 @@ func ValidateToken(tokenString string, jwtKey string) (*Claims, error) {
 	}
 
 	if !token.Valid {
-		return nil, fmt.Errorf("JWT 无效")
+		return nil, fmt.Errorf("JWT 无效") // 这会捕获包括过期在内的多种无效情况
+	}
+
+	// 检查黑名单 (如果提供了 blacklist 实例)
+	if blacklist != nil {
+		// 确保 claims.ID (JTI) 不为空，在 GenerateToken 中已经确保了这一点
+		if claims.ID == "" {
+			return nil, fmt.Errorf("JWT 缺少 JTI (ID) 声明，无法检查黑名单")
+		}
+		isRevoked, err := blacklist.IsBlacklisted(ctx, claims.ID)
+		if err != nil {
+			// 根据安全策略，这里可能是记录错误并允许通过，或者直接拒绝
+			// 为了更安全，我们选择拒绝
+			return nil, fmt.Errorf("检查 Token 黑名单失败: %w", err)
+		}
+		if isRevoked {
+			return nil, fmt.Errorf("JWT 已被吊销")
+		}
 	}
 
 	return claims, nil

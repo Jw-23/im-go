@@ -1,5 +1,3 @@
-const API_BASE_URL = 'http://localhost:8081';
-
 async function request(endpoint, options = {}) {
   // Use relative path for endpoints if proxy is configured
   // const url = `${API_BASE_URL}${endpoint}`;
@@ -53,11 +51,79 @@ export const rejectFriendRequest = (requestId) => request(`/api/v1/friend-reques
 // --- Contacts/Friends API --- 
 export const getFriendsList = () => request('/api/v1/friends', { method: 'GET' });
 
+// --- 群组 API ---
+export const createGroup = async (groupData) => {
+  console.log('[API] 创建群组请求参数:', groupData);
+  const requestBody = {
+    name: groupData.name,
+    description: groupData.description || '',
+    avatarUrl: groupData.avatarUrl || '',
+    isPublic: groupData.isPublic || false,
+    joinCondition: groupData.joinCondition || '',
+    memberIds: groupData.memberIds || []
+  };
+  console.log('[API] 最终请求体:', JSON.stringify(requestBody));
+  
+  const response = await request('/api/v1/groups', { 
+    method: 'POST', 
+    body: JSON.stringify(requestBody)
+  });
+  
+  console.log('[API] 创建群组响应:', response);
+  return response;
+};
+
+export const getGroupDetails = (groupId) => request(`/api/v1/groups/${groupId}`, { method: 'GET' });
+
+export const joinGroup = (groupId) => request(`/api/v1/groups/${groupId}/join`, { method: 'POST' });
+
+export const leaveGroup = (groupId) => request(`/api/v1/groups/${groupId}/leave`, { method: 'POST' });
+
+export const getGroupMembers = (groupId) => request(`/api/v1/groups/${groupId}/members`, { method: 'GET' });
+
+// 添加修复群组会话参与者的API
+export const fixGroupConversationParticipants = (groupId) => {
+  console.log(`[API] 修复群组 ${groupId} 的会话参与者`);
+  return request(`/api/v1/groups/${groupId}/fix-participants`, { method: 'POST' });
+};
+
 // --- Conversation API ---
-export const initiatePrivateConversation = (contactId) => request('/api/v1/conversations/private', { method: 'POST', body: JSON.stringify({ targetId: contactId }) });
+export const initiatePrivateConversation = async (contactId) => {
+  console.log(`[API] 尝试获取/创建与联系人${contactId}的私聊会话`);
+  console.log(`[API] 向服务器发送请求前，先检查是否存在与${contactId}的现有会话`);
+  // 先尝试获取会话列表
+  const conversationsResult = await getConversations();
+  if (conversationsResult.success && conversationsResult.data) {
+    // 在现有会话中寻找与该联系人的私聊
+    const existingConversation = conversationsResult.data.find(conv => 
+      conv.type === 'private' && 
+      ((conv.participants && conv.participants.some(p => p.id === contactId)) || 
+       (conv.otherParticipant && conv.otherParticipant.id === contactId))
+    );
+    
+    if (existingConversation) {
+      console.log(`[API] 已找到与联系人${contactId}的现有会话:`, existingConversation.id);
+      return { success: true, data: existingConversation };
+    }
+    console.log(`[API] 未找到与联系人${contactId}的现有会话，将创建新会话`);
+  }
+  
+  // 如果没有找到现有会话，则创建新的
+  const response = await request('/api/v1/conversations/private', { 
+    method: 'POST', 
+    body: JSON.stringify({ targetId: contactId }) 
+  });
+  console.log(`[API] 创建私聊会话响应:`, response);
+  return response;
+};
 
 // ADDED: Function to get all conversations for the current user
-export const getConversations = () => request('/api/v1/conversations', { method: 'GET' });
+export const getConversations = async () => {
+  console.log('[API] 正在请求会话列表...');
+  const response = await request('/api/v1/conversations', { method: 'GET' });
+  console.log('[API] 会话列表响应:', response);
+  return response;
+};
 
 // ADDED: Function to get messages for a conversation
 export const getConversationMessages = (conversationId, limit, offset) => {

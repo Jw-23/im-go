@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"strconv"
-	"time"
 
 	"im-go/internal/config"
 	"im-go/internal/models"
@@ -15,8 +14,6 @@ import (
 
 	// ws "im-go/internal/websocket" //不再直接导入websocket包来获取Message类型
 	"im-go/internal/imtypes" // 导入新的imtypes包
-
-	"gorm.io/gorm"
 
 	appKafka "im-go/internal/kafka" // Renamed alias for clarity
 
@@ -91,41 +88,98 @@ func (s *messageService) ProcessKafkaMessage(ctx context.Context, kafkaMsg *conf
 		return fmt.Errorf("从 Kafka 反序列化消息输入失败: %w, 原始消息: %s", err, string(kafkaMsg.Value))
 	}
 
+	fmt.Printf("[ProcessKafkaMessage] 开始处理消息: Type=%s, SenderID=%s, ReceiverID=%s, Content=%s, ConversationID=%s\n",
+		receivedInput.Type, receivedInput.SenderID, receivedInput.ReceiverID, string(receivedInput.Content), receivedInput.ConversationID)
+
 	senderIDUint, err := storage.StrToUint(receivedInput.SenderID)
 	if err != nil {
 		return fmt.Errorf("转换发送者ID '%s' 失败: %w", receivedInput.SenderID, err)
 	}
-	receiverIDUint, err := storage.StrToUint(receivedInput.ReceiverID)
+
+	// 验证发送者是否存在
+	_, err = s.validateUserExists(ctx, senderIDUint)
 	if err != nil {
-		return fmt.Errorf("转换接收者ID '%s' 失败: %w", receivedInput.ReceiverID, err)
+		return fmt.Errorf("发送者用户验证失败: %w", err)
 	}
 
-	var conversationID uint
+	// 处理不同类型的消息
 	var conversation *models.Conversation
-	conversation, err = s.convoRepo.FindPrivateConversationByUsers(ctx, senderIDUint, receiverIDUint)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return fmt.Errorf("查找私聊会话失败: %w", err)
-	}
+	var conversationID uint
 
-	if conversation == nil {
-		newConversation := &models.Conversation{Type: models.PrivateConversation}
-		if err := s.convoRepo.CreateConversation(ctx, newConversation); err != nil {
-			return fmt.Errorf("创建新会话失败: %w", err)
+	// 判断是否有会话ID，有会话ID时直接使用
+	if receivedInput.ConversationID != "" {
+		// 已有会话ID，直接使用
+		conversationIDUint, err := storage.StrToUint(receivedInput.ConversationID)
+		if err != nil {
+			return fmt.Errorf("转换会话ID '%s' 失败: %w", receivedInput.ConversationID, err)
 		}
-		conversationID = newConversation.ID
-		conversation = newConversation
-		p1 := &models.ConversationParticipant{ConversationID: conversationID, UserID: senderIDUint, JoinedAt: time.Now()}
-		p2 := &models.ConversationParticipant{ConversationID: conversationID, UserID: receiverIDUint, JoinedAt: time.Now()}
-		if err := s.convoRepo.AddParticipant(ctx, p1); err != nil {
-			return fmt.Errorf("添加参与者1到会话 %d 失败: %w", conversationID, err)
+
+		// 查询会话是否存在
+		conversation, err = s.convoRepo.GetConversationByID(ctx, conversationIDUint)
+		if err != nil {
+			return fmt.Errorf("查询会话ID=%d失败: %w", conversationIDUint, err)
 		}
-		if err := s.convoRepo.AddParticipant(ctx, p2); err != nil {
-			return fmt.Errorf("添加参与者2到会话 %d 失败: %w", conversationID, err)
+
+		// 验证发送者是否是会话参与者
+		_, err = s.convoRepo.GetParticipant(ctx, conversationIDUint, senderIDUint)
+		if err != nil {
+			return fmt.Errorf("发送者ID=%d不是会话ID=%d的参与者: %w", senderIDUint, conversationIDUint, err)
 		}
+
+		conversationID = conversationIDUint
+		fmt.Printf("[ProcessKafkaMessage] 使用现有会话ID=%d，会话类型=%s\n", conversationID, conversation.Type)
+
+		// 如果是群组会话，不需要额外处理ReceiverID，因为消息已经关联到会话
+		// 群聊中ReceiverID可能是会话ID而非用户ID，这是预期行为
 	} else {
-		conversationID = conversation.ID
+		// 没有会话ID，尝试查找或创建私聊会话
+		// 只有私聊可以通过receiverID查找会话，群聊必须提供conversationId
+
+		// 转换接收者ID为uint
+		receiverIDUint, err := storage.StrToUint(receivedInput.ReceiverID)
+		if err != nil {
+			return fmt.Errorf("转换接收者ID '%s' 失败: %w", receivedInput.ReceiverID, err)
+		}
+
+		// 验证接收者是否存在 - 私聊时需要验证接收者
+		_, err = s.validateUserExists(ctx, receiverIDUint)
+		if err != nil {
+			return fmt.Errorf("接收者用户验证失败: %w", err)
+		}
+
+		// 获取或创建私聊会话 (发送者和接收者的会话)
+		var privateConversation *models.Conversation
+
+		tx := s.convoRepo.GetDB().Begin()
+		if tx.Error != nil {
+			return fmt.Errorf("开始事务失败: %w", tx.Error)
+		}
+
+		defer func() {
+			if r := recover(); r != nil {
+				tx.Rollback()
+				log.Printf("创建会话过程中发生异常，已回滚: %v", r)
+			}
+		}()
+
+		// 查找或创建私聊会话
+		privateConversation, err = s.convoRepo.FindOrCreatePrivateConversationWithTx(ctx, tx, senderIDUint, receiverIDUint)
+		if err != nil {
+			tx.Rollback()
+			return fmt.Errorf("查找或创建私聊会话失败: %w", err)
+		} else {
+			conversation = privateConversation
+			conversationID = conversation.ID
+			fmt.Printf("[ProcessKafkaMessage] 找到现有私聊会话ID=%d\n", conversationID)
+		}
+
+		if err := tx.Commit().Error; err != nil {
+			tx.Rollback()
+			return fmt.Errorf("提交事务失败: %w", err)
+		}
 	}
 
+	// 创建消息
 	dbMessage := &models.Message{
 		ConversationID: conversationID,
 		SenderID:       senderIDUint,
@@ -143,57 +197,117 @@ func (s *messageService) ProcessKafkaMessage(ctx context.Context, kafkaMsg *conf
 		dbMessage.MetadataRaw = metadataBytes
 	}
 
-	if err := s.msgRepo.Create(ctx, dbMessage); err != nil {
+	// 使用事务保存消息和更新会话
+	tx := s.convoRepo.GetDB().Begin()
+	if tx.Error != nil {
+		return fmt.Errorf("开始保存消息事务失败: %w", tx.Error)
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			log.Printf("保存消息过程中发生异常，已回滚: %v", r)
+		}
+	}()
+
+	if err := tx.Create(dbMessage).Error; err != nil {
+		tx.Rollback()
 		return fmt.Errorf("存储消息到数据库失败: %w", err)
 	}
 
+	// 更新会话的最后一条消息
 	conversation.LastMessageID = &dbMessage.ID
-	if err := s.convoRepo.UpdateConversation(ctx, conversation); err != nil {
+	if err := tx.Save(conversation).Error; err != nil {
+		tx.Rollback()
 		return fmt.Errorf("更新会话 %d 的 LastMessageID 失败: %w", conversationID, err)
 	}
 
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return fmt.Errorf("提交消息保存事务失败: %w", err)
+	}
+
+	fmt.Printf("[ProcessKafkaMessage] 消息已保存: ID=%d, 会话ID=%d\n", dbMessage.ID, conversationID)
+
 	// --- 新增：将消息推送到 WebSocketOutgoingTopic ---
 	// 构建发送给客户端的 websocket.Message
-	// 注意：这里的 Type 需要是 websocket.MessageType
-	outgoingWsMsg := &imtypes.Message{ // 使用 imtypes.Message
+	outgoingWsMsg := &imtypes.Message{
 		ID:             dbMessage.IDString(),
-		Type:           imtypes.MessageType(dbMessage.Type), // 从 models.MessageTypeDB 转为 imtypes.MessageType
+		Type:           imtypes.MessageType(dbMessage.Type),
 		Content:        dbMessage.Content,
 		SenderID:       strconv.FormatUint(uint64(dbMessage.SenderID), 10),
-		ReceiverID:     receivedInput.ReceiverID,
 		Timestamp:      dbMessage.SentAt,
 		ConversationID: strconv.FormatUint(uint64(dbMessage.ConversationID), 10),
 	}
 	if dbMessage.Type == models.FileMessageTypeDB || dbMessage.Type == models.ImageMessageTypeDB {
-		fileMeta, _ := dbMessage.GetFileMetadata() // 假设GetFileMetadata可以处理两种类型或有相应方法
+		fileMeta, _ := dbMessage.GetFileMetadata()
 		if fileMeta != nil {
 			outgoingWsMsg.FileName = fileMeta.FileName
 			outgoingWsMsg.FileSize = fileMeta.FileSize
-			// outgoingWsMsg.Content 应该包含 URL，这部分逻辑可能需要在文件上传完成后补充
 		}
 	}
 
-	outgoingMsgBytes, err := json.Marshal(outgoingWsMsg)
+	// 获取会话所有参与者，以便可以向他们发送消息
+	participants, err := s.convoRepo.GetConversationParticipants(ctx, conversationID)
 	if err != nil {
-		log.Printf("序列化出站 WebSocket 消息失败: %v", err)
-		return nil // 或者只记录错误，不中断主流程
+		log.Printf("获取会话参与者失败: %v", err)
+	} else {
+		fmt.Printf("[ProcessKafkaMessage] 会话ID=%d有%d名参与者\n", conversationID, len(participants))
 	}
 
-	// 发送到 WebSocketOutgoingTopic。消息的 Key 可以是 ReceiverID (私聊) 或 ConversationID (群聊)
-	// 以便消费者可以根据 Key 做一些路由或分区优化（如果 Kafka 分区策略基于 Key）。
-	var outgoingKey []byte
-	// TODO: 确定是私聊还是群聊，并设置合适的 Key
-	// if isGroupMessage(receivedInput.Type) { // 假设有这样的判断函数
-	// 	outgoingKey = []byte(strconv.FormatUint(uint64(conversationID), 10))
-	// } else {
-	outgoingKey = []byte(receivedInput.ReceiverID)
-	// }
+	// 群聊消息发给所有人，私聊只需发给接收者
+	if conversation.Type == models.GroupConversation {
+		// 群聊：向所有参与者发送消息
+		for _, participant := range participants {
+			// 给每个参与者单独发送一条消息
+			if participant.UserID == senderIDUint {
+				// 跳过发送者自己，因为他已经在前端看到了乐观更新的消息
+				continue
+			}
 
-	if err := s.producer.SendMessage(ctx, s.cfg.Kafka.WebSocketOutgoingTopic, outgoingKey, outgoingMsgBytes); err != nil {
-		log.Printf("发送消息到 WebSocketOutgoingTopic 失败: %v", err)
-		// 这个错误也可能不应该中断主流程，而是记录下来
+			// 为每个接收者单独设置ReceiverID
+			outgoingWsMsg.ReceiverID = strconv.FormatUint(uint64(participant.UserID), 10)
+			participantMessageBytes, err := json.Marshal(outgoingWsMsg)
+			if err != nil {
+				log.Printf("序列化发送给参与者 %d 的消息失败: %v", participant.UserID, err)
+				continue
+			}
+
+			// 以接收者ID为key发送消息
+			outgoingKey := []byte(outgoingWsMsg.ReceiverID)
+			if err := s.producer.SendMessage(ctx, s.cfg.Kafka.WebSocketOutgoingTopic, outgoingKey, participantMessageBytes); err != nil {
+				log.Printf("发送消息到参与者 %d 失败: %v", participant.UserID, err)
+			}
+			fmt.Printf("[ProcessKafkaMessage] 发送群聊消息给参与者ID=%d\n", participant.UserID)
+		}
+	} else {
+		// 私聊：只向接收者发送消息
+		outgoingWsMsg.ReceiverID = receivedInput.ReceiverID
+		outgoingMsgBytes, _ := json.Marshal(outgoingWsMsg)
+		outgoingKey := []byte(receivedInput.ReceiverID)
+
+		if err := s.producer.SendMessage(ctx, s.cfg.Kafka.WebSocketOutgoingTopic, outgoingKey, outgoingMsgBytes); err != nil {
+			log.Printf("发送私聊消息到接收者ID=%s失败: %v", receivedInput.ReceiverID, err)
+		}
+		fmt.Printf("[ProcessKafkaMessage] 发送私聊消息到接收者ID=%s\n", receivedInput.ReceiverID)
 	}
+
 	return nil
+}
+
+// validateUserExists 检查用户是否存在
+func (s *messageService) validateUserExists(ctx context.Context, userID uint) (bool, error) {
+	var count int64
+	err := s.convoRepo.GetDB().WithContext(ctx).Model(&models.User{}).
+		Where("id = ?", userID).
+		Count(&count).Error
+	if err != nil {
+		return false, fmt.Errorf("查询用户 %d 是否存在失败: %w", userID, err)
+	}
+	if count == 0 {
+		return false, fmt.Errorf("用户 %d 不存在", userID)
+	}
+	return true, nil
 }
 
 // GetMessagesForConversation 获取指定会话的消息列表。

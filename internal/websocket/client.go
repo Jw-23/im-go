@@ -122,15 +122,20 @@ func (c *Client) readPump(wsCfg config.WebSocketConfig) {
 
 		// 转换为 RawMessageInput DTO
 		rawInputDto := imtypes.RawMessageInput{ // 使用 imtypes.RawMessageInput
-			ID:         clientReceivedWsMsg.ID,
-			Type:       string(clientReceivedWsMsg.Type),
-			Content:    []byte(clientReceivedWsMsg.Content),
-			SenderID:   strconv.FormatUint(uint64(c.UserID), 10), // 服务端填充认证过的 SenderID
-			ReceiverID: clientReceivedWsMsg.ReceiverID,
-			Timestamp:  time.Now(), // 服务端接收时间
-			FileName:   clientReceivedWsMsg.FileName,
-			FileSize:   clientReceivedWsMsg.FileSize,
+			ID:             clientReceivedWsMsg.ID,
+			Type:           string(clientReceivedWsMsg.Type),
+			Content:        []byte(clientReceivedWsMsg.Content),
+			SenderID:       strconv.FormatUint(uint64(c.UserID), 10), // 服务端填充认证过的 SenderID
+			ReceiverID:     clientReceivedWsMsg.ReceiverID,
+			Timestamp:      time.Now(), // 服务端接收时间
+			FileName:       clientReceivedWsMsg.FileName,
+			FileSize:       clientReceivedWsMsg.FileSize,
+			ConversationID: clientReceivedWsMsg.ConversationID, // 添加会话ID映射
 		}
+
+		// 日志记录，用于调试
+		log.Printf("准备处理消息: Type=%s, SenderID=%s, ReceiverID=%s, ConversationID=%s",
+			rawInputDto.Type, rawInputDto.SenderID, rawInputDto.ReceiverID, rawInputDto.ConversationID)
 
 		if c.handleMessage != nil {
 			if err := c.handleMessage(context.Background(), rawInputDto); err != nil {

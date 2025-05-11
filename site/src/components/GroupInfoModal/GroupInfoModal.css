@@ -1,0 +1,399 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.group-info-modal {
+  background-color: var(--background, white);
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--text-primary, #333);
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--text-secondary, #666);
+  cursor: pointer;
+  line-height: 1;
+}
+
+/* 选项卡 */
+.modal-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
+}
+
+.modal-tabs button {
+  flex: 1;
+  padding: 10px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text-secondary, #666);
+}
+
+.modal-tabs button.active {
+  color: var(--primary-color, #2196f3);
+  border-bottom-color: var(--primary-color, #2196f3);
+}
+
+.modal-content {
+  padding: 20px;
+}
+
+/* 基本信息标签 */
+.group-basic-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.group-avatar {
+  margin-bottom: 15px;
+}
+
+.group-avatar img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.group-name-section {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.group-name-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.group-name-display h3 {
+  margin: 0;
+  font-size: 1.3rem;
+  color: var(--text-primary, #333);
+}
+
+.edit-button {
+  margin-left: 10px;
+  background: none;
+  border: none;
+  color: var(--primary-color, #2196f3);
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.edit-name-form {
+  width: 100%;
+}
+
+.button-group {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.cancel-button, .save-button {
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.cancel-button {
+  background: none;
+  border: 1px solid var(--border-color, #e0e0e0);
+  color: var(--text-secondary, #666);
+}
+
+.save-button {
+  background-color: var(--primary-color, #2196f3);
+  border: none;
+  color: white;
+}
+
+.error-message {
+  color: var(--error-color, #f44336);
+  font-size: 0.85rem;
+  margin-top: 5px;
+}
+
+.group-stats {
+  width: 100%;
+  margin-bottom: 20px;
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 15px;
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
+}
+
+.stat-item:last-child {
+  border-bottom: none;
+}
+
+.stat-label {
+  color: var(--text-secondary, #666);
+}
+
+.stat-value {
+  color: var(--text-primary, #333);
+  font-weight: 500;
+}
+
+.leave-group {
+  margin-top: 20px;
+  width: 100%;
+}
+
+.leave-button {
+  width: 100%;
+  padding: 10px;
+  background-color: var(--error-color, #f44336);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+/* 修复群组会话按钮样式 */
+.fix-group-conversation {
+  margin-top: 20px;
+  width: 100%;
+}
+
+.fix-button {
+  width: 100%;
+  padding: 10px;
+  background-color: var(--warning-color, #ff9800);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+
+.fix-button:hover {
+  background-color: var(--warning-color-dark, #f57c00);
+}
+
+/* 成员管理标签 */
+.group-members {
+  width: 100%;
+}
+
+.members-count {
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+  color: var(--text-secondary, #666);
+}
+
+.members-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.member-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.member-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+  object-fit: cover;
+}
+
+.member-info {
+  flex-grow: 1;
+}
+
+.member-name {
+  font-size: 0.95rem;
+  color: var(--text-primary, #333);
+  display: flex;
+  align-items: center;
+}
+
+.owner-badge, .self-badge {
+  margin-left: 5px;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-size: 0.7rem;
+}
+
+.owner-badge {
+  background-color: var(--primary-color, #2196f3);
+  color: white;
+}
+
+.self-badge {
+  background-color: var(--secondary-color, #4caf50);
+  color: white;
+}
+
+.remove-button {
+  background-color: var(--error-color-light, #ffebee);
+  color: var(--error-color, #f44336);
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.no-members {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-secondary, #666);
+}
+
+/* 添加成员标签 */
+.add-members {
+  width: 100%;
+}
+
+.search-section {
+  margin-bottom: 15px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.selected-count {
+  margin-top: 5px;
+  font-size: 0.85rem;
+  color: var(--text-secondary, #666);
+}
+
+.contacts-list {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 4px;
+  margin-bottom: 15px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.contact-item:hover {
+  background-color: var(--hover-background, #f5f5f5);
+}
+
+.contact-item.selected {
+  background-color: var(--primary-color-light, rgba(33, 150, 243, 0.08));
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 3px;
+  margin-right: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--primary-color, #2196f3);
+}
+
+.contact-item.selected .checkbox {
+  background-color: var(--primary-color, #2196f3);
+  border-color: var(--primary-color, #2196f3);
+  color: white;
+}
+
+.contact-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-right: 10px;
+  object-fit: cover;
+}
+
+.contact-name {
+  font-size: 0.9rem;
+  color: var(--text-primary, #333);
+}
+
+.no-contacts {
+  padding: 15px;
+  text-align: center;
+  color: var(--text-secondary, #666);
+}
+
+.add-members-footer {
+  display: flex;
+  justify-content: center;
+}
+
+.add-button {
+  padding: 8px 16px;
+  background-color: var(--primary-color, #2196f3);
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+}
+
+.add-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+} 

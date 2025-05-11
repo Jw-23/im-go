@@ -47,12 +47,19 @@ func (h *ConversationHandler) GetUserConversationsHandler(w http.ResponseWriter,
 		return
 	}
 
+	// 打印调试信息
+	log.Printf("获取到 %d 个会话", len(rawConversations))
+
 	result := make([]map[string]interface{}, 0, len(rawConversations))
 	for _, convo := range rawConversations {
 		item := make(map[string]interface{})
 		item["id"] = convo.ID
 		item["type"] = convo.Type
 		item["updatedAt"] = convo.UpdatedAt
+
+		// 添加日志，查看会话类型和目标ID
+		log.Printf("处理会话ID: %d, 类型: %s, 目标ID: %d",
+			convo.ID, convo.Type, convo.TargetID)
 
 		if convo.Type == models.PrivateConversation {
 			participants, err := h.convoService.GetConversationParticipants(r.Context(), convo.ID)
@@ -62,7 +69,8 @@ func (h *ConversationHandler) GetUserConversationsHandler(w http.ResponseWriter,
 						item["targetId"] = p.UserID
 						otherUser, errUserService := h.convoService.GetUserByID(r.Context(), p.UserID)
 						if errUserService == nil && otherUser != nil {
-							item["name"] = otherUser.Username
+							item["name"] = otherUser.Nickname
+							item["username"] = otherUser.Username
 							item["avatar"] = otherUser.AvatarURL
 						} else {
 							log.Printf("Error fetching user %d for convo %d: %v", p.UserID, convo.ID, errUserService)
@@ -80,10 +88,20 @@ func (h *ConversationHandler) GetUserConversationsHandler(w http.ResponseWriter,
 			if convo.TargetID > 0 {
 				groupID := convo.TargetID
 				item["targetId"] = groupID
+
+				// 获取群组信息
 				group, errGroupService := h.groupService.GetGroupDetailsByID(r.Context(), groupID)
 				if errGroupService == nil && group != nil {
+					log.Printf("获取群组信息成功, 群组ID: %d, 名称: %s", groupID, group.Name)
 					item["name"] = group.Name
 					item["avatar"] = group.AvatarURL
+					item["description"] = group.Description
+
+					// 获取群组成员数量
+					members, _ := h.groupService.GetGroupMembers(r.Context(), groupID, 1000, 0)
+					if members != nil {
+						item["memberCount"] = len(members)
+					}
 				} else {
 					log.Printf("Error fetching group %d for convo %d: %v", groupID, convo.ID, errGroupService)
 					item["name"] = fmt.Sprintf("Group %d", groupID)
@@ -162,7 +180,8 @@ func (h *ConversationHandler) CreateOrGetPrivateConversationHandler(w http.Respo
 				item["targetId"] = p.UserID // Essential for frontend logic
 				otherUser, errUserService := h.convoService.GetUserByID(r.Context(), p.UserID)
 				if errUserService == nil && otherUser != nil {
-					item["name"] = otherUser.Username // Use Username
+					item["name"] = otherUser.Nickname     // 使用昵称
+					item["username"] = otherUser.Username // 添加用户名
 					item["avatar"] = otherUser.AvatarURL
 				} else {
 					// Fallback if user details cannot be fetched

@@ -43,7 +43,15 @@
 
 .conversation-name {
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 1rem;
+  flex-grow: 1;
+  margin-right: 8px;
+  color: var(--text-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+  cursor: help; /* 提示用户可以查看tooltip */
 }
 
 .conversation-list-item.selected .conversation-name {
@@ -63,4 +71,38 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* 添加群组相关样式 */
+.avatar-container {
+  position: relative;
+  margin-right: 10px;
+}
+
+.conversation-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.group-indicator {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  background-color: #4caf50;
+  color: white;
+  font-size: 10px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--background, white);
+}
+
+.group-conversation .conversation-name {
+  font-weight: 500;
+  color: #4caf50;
 } 

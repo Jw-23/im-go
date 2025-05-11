@@ -1,0 +1,296 @@
+/* 主应用容器 */
+.app-container {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  background-color: var(--background);
+}
+
+/* 侧边栏样式 */
+.sidebar {
+  width: 300px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border-color);
+  background-color: var(--sidebar-bg);
+}
+
+/* 侧边栏标签页 */
+.sidebar-header {
+  padding: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.tabs {
+  display: flex;
+  margin-bottom: 10px;
+}
+
+.tabs button {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 8px 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+.tabs button.active {
+  color: var(--primary-color);
+  border-bottom: 2px solid var(--primary-color);
+}
+
+.create-group-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  background-color: var(--primary-color);
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  gap: 5px;
+}
+
+.create-group-btn:hover {
+  background-color: var(--primary-color-dark, #1565c0);
+}
+
+/* 联系人列表样式 */
+.contact-list {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 10px 15px;
+}
+
+.loading-contacts {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+  color: var(--text-secondary);
+}
+
+.empty-contacts {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.contacts-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 5px 10px 5px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.contacts-header span {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.add-contact-btn {
+  background-color: var(--primary-color-light, #2196f3);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.add-contact-btn.small {
+  padding: 3px 8px;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-bottom: 5px;
+  margin-left: 2px;
+  margin-right: 2px;
+}
+
+.contact-item:hover {
+  background-color: var(--hover-background, #f5f5f5);
+}
+
+.contact-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+  object-fit: cover;
+}
+
+.contact-info {
+  flex-grow: 1;
+}
+
+.contact-name {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.contact-status {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+/* 聊天区域样式 */
+.chat-area {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 聊天头部扩展 */
+.chat-header-info {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-header-members {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.chat-header-actions {
+  display: flex;
+  align-items: center;
+}
+
+.manage-group-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  margin-left: 10px;
+  display: flex;
+  align-items: center;
+  font-size: 0.8rem;
+  gap: 5px;
+}
+
+.manage-group-btn:hover {
+  color: var(--primary-color);
+}
+
+/* 消息输入工具栏 */
+.message-input-toolbar {
+  display: flex;
+  padding: 5px 0;
+}
+
+.toolbar-button {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  margin-right: 10px;
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+
+.toolbar-button:hover {
+  color: var(--primary-color);
+}
+
+/* 未选择会话时的提示 */
+.no-chat-selected {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+  text-align: center;
+  padding: 20px;
+  background-color: var(--chat-bg);
+}
+
+/* 认证提示容器 */
+.app-container--auth {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: var(--sidebar-bg);
+}
+
+/* 认证提示内容 */
+.auth-prompt {
+  text-align: center;
+  padding: 40px;
+  background-color: var(--background);
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  max-width: 90%;
+  width: 400px;
+}
+
+.auth-prompt h1 {
+  margin-bottom: 16px;
+  color: var(--text-primary);
+}
+
+.auth-prompt p {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+
+.auth-prompt__button {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  font-size: inherit;
+  text-decoration: underline;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 250px;
+  }
+}
+
+@media (max-width: 576px) {
+  .app-container {
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    width: 100%;
+    height: 70px;
+    flex-direction: row;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+  }
+} 

@@ -21,7 +21,7 @@ var (
 
 // AuthService 定义了用户认证服务的接口。
 type AuthService interface {
-	Register(ctx context.Context, username, email, password string) (*models.User, error)
+	Register(ctx context.Context, username, nickname, email, password string) (*models.User, error)
 	Login(ctx context.Context, usernameOrEmail, password string) (token string, user *models.User, err error)
 }
 
@@ -40,7 +40,7 @@ func NewAuthService(userRepo storage.UserRepository, cfg config.Config) AuthServ
 }
 
 // Register 处理用户注册逻辑。
-func (s *authService) Register(ctx context.Context, username, email, password string) (*models.User, error) {
+func (s *authService) Register(ctx context.Context, username, nickname, email, password string) (*models.User, error) {
 	// 检查用户名是否存在
 	_, err := s.userRepo.GetByUsername(ctx, username)
 	if err == nil {
@@ -66,6 +66,7 @@ func (s *authService) Register(ctx context.Context, username, email, password st
 
 	newUser := &models.User{
 		Username:     username,
+		Nickname:     nickname,
 		Email:        email,
 		PasswordHash: hashedPassword,
 		// 其他默认字段可以在模型或数据库层面设置

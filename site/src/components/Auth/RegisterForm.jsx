@@ -45,7 +45,13 @@ const RegisterForm = ({ onSwitchToLogin, onSuccess }) => {
       </div>
       <div className="auth-form__field">
         <label htmlFor="register-nickname">{t('nickname')}</label>
-        <input type="text" id="register-nickname" value={nickname} onChange={(e) => setNickname(e.target.value)} />
+        <input 
+          type="text" 
+          id="register-nickname" 
+          value={nickname} 
+          onChange={(e) => setNickname(e.target.value)} 
+          required 
+        />
       </div>
       <button type="submit" className="auth-form__button" disabled={isLoading}>
         {isLoading ? t('registering') : t('register_button')}

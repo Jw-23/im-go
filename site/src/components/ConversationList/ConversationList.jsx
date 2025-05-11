@@ -3,7 +3,6 @@ import ConversationListItem from '../ConversationListItem/ConversationListItem';
 import ContactList from '../ContactList/ContactList';
 import './ConversationList.css';
 import { useTranslation } from 'react-i18next';
-import { FaUserFriends, FaPlus, FaComments } from 'react-icons/fa';
 
 function ConversationList({
   conversations,
@@ -44,29 +43,6 @@ function ConversationList({
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <div className="header-actions">
-          <button
-            className={`view-mode-button ${viewMode === 'conversations' ? 'active' : ''}`}
-            onClick={() => setViewMode('conversations')}
-            title={t('show_conversations')}
-          >
-            <FaComments />
-          </button>
-          <button
-            className={`view-mode-button ${viewMode === 'contacts' ? 'active' : ''}`}
-            onClick={() => setViewMode('contacts')}
-            title={t('show_contacts')}
-          >
-            <FaUserFriends />
-          </button>
-          <button
-            className="add-conversation-button"
-            onClick={onOpenAddContactModal}
-            title={t('add_contact_or_group')}
-          >
-            <FaPlus />
-          </button>
-        </div>
       </div>
       
       <div className="conversation-list-items">

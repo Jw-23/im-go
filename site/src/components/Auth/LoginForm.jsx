@@ -4,7 +4,7 @@ import './AuthForm.css'; // Shared CSS for auth forms
 import { useTranslation } from 'react-i18next';
 
 const LoginForm = ({ onSwitchToRegister, onSuccess }) => {
-  const [username, setUsername] = useState('');
+  const [usernameOrEmail, setUsernameOrEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -15,7 +15,7 @@ const LoginForm = ({ onSwitchToRegister, onSuccess }) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-    const result = await login({ username, password });
+    const result = await login({ username: usernameOrEmail, password });
     setIsLoading(false);
     if (result.success) {
       if(onSuccess) onSuccess();
@@ -29,13 +29,14 @@ const LoginForm = ({ onSwitchToRegister, onSuccess }) => {
       <h2>{t('login')}</h2>
       {error && <p className="auth-form__error">{error}</p>}
       <div className="auth-form__field">
-        <label htmlFor="login-username">{t('username')}</label>
+        <label htmlFor="login-username">{t('username_or_email')}</label>
         <input 
           type="text" 
           id="login-username" 
-          value={username} 
-          onChange={(e) => setUsername(e.target.value)} 
+          value={usernameOrEmail} 
+          onChange={(e) => setUsernameOrEmail(e.target.value)} 
           required 
+          placeholder={t('enter_username_or_email')}
         />
       </div>
       <div className="auth-form__field">

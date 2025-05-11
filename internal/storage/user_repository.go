@@ -20,6 +20,7 @@ type UserRepository interface {
 	SearchUsers(ctx context.Context, query string, currentUserID uint) ([]models.User, error)
 	GetBasicInfoByID(ctx context.Context, id uint) (*models.UserBasicInfo, error)
 	GetMultipleBasicInfoByIDs(ctx context.Context, userIDs []uint) ([]*models.UserBasicInfo, error)
+	GetDB() *gorm.DB
 	// Delete(ctx context.Context, id uint) error // Depending on soft delete or hard delete preference
 	// List(ctx context.Context, offset, limit int) ([]*models.User, error)
 }
@@ -143,4 +144,9 @@ func (r *gormUserRepository) GetMultipleBasicInfoByIDs(ctx context.Context, user
 		return nil, err
 	}
 	return basicInfos, nil
+}
+
+// GetDB returns the underlying gorm.DB instance
+func (r *gormUserRepository) GetDB() *gorm.DB {
+	return r.db
 }

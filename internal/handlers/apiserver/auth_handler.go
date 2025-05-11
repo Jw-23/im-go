@@ -5,23 +5,30 @@ import (
 	"errors"
 	"net/http"
 
-	"im-go/internal/models" // 用于 LoginResponse 中的 User
+	"im-go/internal/auth"       // Import for TokenBlacklist interface
+	"im-go/internal/middleware" // Import for GetClaimsFromContext
+	"im-go/internal/models"     // 用于 LoginResponse 中的 User
 	"im-go/internal/services"
 )
 
 // AuthHandler 封装了认证相关的 HTTP 处理器方法。
 type AuthHandler struct {
-	AuthService services.AuthService
+	AuthService    services.AuthService
+	TokenBlacklist auth.TokenBlacklist // Added TokenBlacklist service
 }
 
 // NewAuthHandler 创建一个新的 AuthHandler 实例。
-func NewAuthHandler(authService services.AuthService) *AuthHandler {
-	return &AuthHandler{AuthService: authService}
+func NewAuthHandler(authService services.AuthService, tokenBlacklist auth.TokenBlacklist) *AuthHandler {
+	return &AuthHandler{
+		AuthService:    authService,
+		TokenBlacklist: tokenBlacklist, // Store the injected service
+	}
 }
 
 // RegisterRequest 是用户注册请求的结构体。
 type RegisterRequest struct {
 	Username string `json:"username"`
+	Nickname string `json:"nickname"`        // 昵称必填
 	Email    string `json:"email,omitempty"` // 邮箱可选
 	Password string `json:"password"`
 }
@@ -52,14 +59,14 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 
-	if req.Username == "" || req.Password == "" {
-		http.Error(w, "用户名和密码不能为空", http.StatusBadRequest)
+	if req.Username == "" || req.Password == "" || req.Nickname == "" {
+		http.Error(w, "用户名、昵称和密码不能为空", http.StatusBadRequest)
 		return
 	}
 
 	// TODO: 添加更严格的输入验证 (例如密码强度，用户名/邮箱格式)
 
-	user, err := h.AuthService.Register(r.Context(), req.Username, req.Email, req.Password)
+	user, err := h.AuthService.Register(r.Context(), req.Username, req.Nickname, req.Email, req.Password)
 	if err != nil {
 		if errors.Is(err, services.ErrUserAlreadyExists) {
 			writeJSONError(w, err.Error(), http.StatusConflict)
@@ -102,6 +109,34 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	user.PasswordHash = "" // 清除敏感信息
 	writeJSONResponse(w, http.StatusOK, LoginResponse{Token: token, User: user})
+}
+
+// LogoutHandler 处理用户登出请求，将当前 Token 加入黑名单。
+func (h *AuthHandler) LogoutHandler(w http.ResponseWriter, r *http.Request) {
+	claims, ok := middleware.GetClaimsFromContext(r.Context())
+	if !ok {
+		writeJSONError(w, "用户未认证或无法解析用户声明", http.StatusUnauthorized)
+		return
+	}
+
+	if claims.ID == "" { // JTI (claims.ID)
+		writeJSONError(w, "Token 缺少 JTI，无法执行登出", http.StatusInternalServerError)
+		return
+	}
+	if claims.ExpiresAt == nil {
+		writeJSONError(w, "Token 缺少过期时间，无法执行登出", http.StatusInternalServerError)
+		return
+	}
+
+	originalExpiryTime := claims.ExpiresAt.Time
+	err := h.TokenBlacklist.Add(r.Context(), claims.ID, originalExpiryTime)
+	if err != nil {
+		// log.Printf("将 Token 加入黑名单失败: %v", err) // Consider logging this error
+		writeJSONError(w, "登出过程中发生内部错误", http.StatusInternalServerError)
+		return
+	}
+
+	writeJSONResponse(w, http.StatusOK, map[string]string{"message": "登出成功"})
 }
 
 // writeJSONResponse 是一个辅助函数，用于发送 JSON 响应。

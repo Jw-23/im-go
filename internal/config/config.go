@@ -24,6 +24,13 @@ type CORSConfig struct {
 	MaxAge           int      `mapstructure:"MAX_AGE"`
 }
 
+// ADDED: RedisConfig holds configuration for Redis.
+type RedisConfig struct {
+	Addr     string `mapstructure:"ADDR"`
+	Password string `mapstructure:"PASSWORD"`
+	DB       int    `mapstructure:"DB"`
+}
+
 // Config holds all configuration for the application.
 // The values are read by viper from a config file or environment variables.
 type Config struct {
@@ -37,6 +44,7 @@ type Config struct {
 	Storage    StorageConfig   `mapstructure:"STORAGE"`
 	Auth       AuthConfig      `mapstructure:"AUTH"`
 	WebSocket  WebSocketConfig `mapstructure:"WEBSOCKET"`
+	Redis      RedisConfig     `mapstructure:"REDIS"` // ADDED RedisConfig
 }
 
 // ServerConfig holds configuration for the HTTP server.
@@ -163,6 +171,11 @@ func LoadConfig(path string) (config Config, err error) {
 	// Auth Defaults
 	v.SetDefault("AUTH.JWT_SECRET_KEY", "a_very_secret_key_that_should_be_changed")
 	v.SetDefault("AUTH.JWT_EXPIRY", 15*time.Minute) // 15 minutes
+
+	// ADDED: Redis Defaults
+	v.SetDefault("REDIS.ADDR", "localhost:6379")
+	v.SetDefault("REDIS.PASSWORD", "")
+	v.SetDefault("REDIS.DB", 0)
 
 	// WebSocket Defaults (values similar to existing constants)
 	v.SetDefault("WEBSOCKET.WRITE_WAIT_SECONDS", 10)

@@ -22,18 +22,35 @@
 }
 
 .chat-header-name {
-  font-size: 1.1rem;
-  font-weight: 500;
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  cursor: help; /* 提示用户可以查看tooltip */
+  max-width: 260px; /* 限制宽度防止长名称溢出 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: var(--text-color);
+  flex-grow: 1; /* 让名称占据中间剩余空间 */
 }
 
 .message-list {
   flex-grow: 1;
   overflow-y: auto;
   padding: 20px;
+  padding-bottom: 30px; /* 增加底部空间 */
   display: flex;
   flex-direction: column;
+  scroll-behavior: smooth; /* 平滑滚动 */
 }
+
+/* 消息滚动锚点 */
+.message-end-anchor {
+  height: 20px; /* 增加高度确保滚动到底部有足够空间 */
+  margin-top: 20px;
+  width: 100%;
+}
+
 .message-bubble.sender {
   align-self: flex-end;
   background: #1976d2; /* 蓝色 */
@@ -41,5 +58,54 @@
 }
 .message-text{
   color: #fff;
+}
+
+/* WebSocket 连接状态指示器 */
+.connection-status {
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: 10px;
+  margin-left: 10px;
+}
+
+.connection-status.connected {
+  background-color: #4caf50; /* 绿色 */
+  color: white;
+}
+
+.connection-status.disconnected {
+  background-color: #f44336; /* 红色 */
+  color: white;
+}
+
+/* 断开连接警告 */
+.connection-warning {
+  background-color: #ffebee; /* 淡红色背景 */
+  color: #d32f2f; /* 红色文字 */
+  text-align: center;
+  padding: 5px 0;
+  font-size: 0.9rem;
+  border-radius: 5px;
+  margin-bottom: 8px;
+}
+
+/* 消息加载状态 */
+.loading-more-messages {
+  text-align: center;
+  padding: 8px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* 消息输入容器样式 */
+.message-input-container {
+  padding: 10px;
+  background-color: var(--background);
+  border-top: 1px solid var(--border-color);
+  width: 100%;
+  box-sizing: border-box;
+}
+.message-input-container.inner-container{
+  border-top: none;
 }
 /* Styles for individual messages will be in MessageBubble.css */ 

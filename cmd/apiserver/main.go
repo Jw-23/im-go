@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"im-go/internal/imtypes" // Import for StorageService interface
 	appKafka "im-go/internal/kafka"
+	"im-go/internal/models"
 	"log"
 	"net/http"
 	"os"
@@ -21,8 +22,12 @@ import (
 	"im-go/internal/services"
 	"im-go/internal/storage"
 
+	appRedis "im-go/internal/redis" // Alias for your internal redis package
+
 	"github.com/gorilla/handlers" // ADDED import
 	"github.com/gorilla/mux"
+	redisDriver "github.com/redis/go-redis/v9"
+	"gorm.io/gorm"
 )
 
 func main() {
@@ -47,7 +52,22 @@ func main() {
 		log.Println("API 服务器数据库表迁移成功 (如果执行)。")
 	}
 
-	// 3. 初始化 Repositories
+	// 3. 初始化 Redis Client
+	redisClient := redisDriver.NewClient(&redisDriver.Options{
+		Addr:     cfg.Redis.Addr,
+		Password: cfg.Redis.Password,
+		DB:       cfg.Redis.DB,
+	})
+	_, err = redisClient.Ping(context.Background()).Result()
+	if err != nil {
+		log.Fatalf("无法连接到 Redis: %v", err)
+	}
+	log.Println("成功连接到 Redis")
+
+	// 4. 初始化 TokenBlacklist 服务
+	tokenBlacklistService := appRedis.NewRedisTokenBlacklist(redisClient)
+
+	// 5. 初始化 Repositories
 	userRepo := storage.NewGormUserRepository(db)
 	convoRepo := storage.NewGormConversationRepository(db)
 	groupRepo := storage.NewGormGroupRepository(db)
@@ -55,7 +75,7 @@ func main() {
 	friendReqRepo := storage.NewGormFriendRequestRepository(db)
 	friendshipRepo := storage.NewGormFriendshipRepository(db)
 
-	// 4. 初始化 Kafka Producer
+	// 6. 初始化 Kafka Producer
 	log.Printf("DEBUG [Kafka Init]: Brokers from config: %v", cfg.Kafka.Brokers)
 	log.Printf("DEBUG [Kafka Init]: Friend Request Topic from config: %s", cfg.Kafka.FriendRequestTopic)
 
@@ -66,7 +86,7 @@ func main() {
 	defer kfkProducer.Close()
 	log.Println("Kafka 生产者初始化成功 (API Server)。")
 
-	// 5. 初始化 Services
+	// 7. 初始化 Services
 	authService := services.NewAuthService(userRepo, cfg)
 	userService := services.NewUserService(userRepo)
 	messageService := services.NewMessageService(msgRepo, convoRepo, kfkProducer, cfg)
@@ -74,7 +94,7 @@ func main() {
 	groupService := services.NewGroupService(groupRepo, userRepo, convoRepo)
 	friendReqService := services.NewFriendRequestService(db, userRepo, friendReqRepo, friendshipRepo, kfkProducer, cfg.Kafka)
 
-	// 5.1 初始化存储服务 (New)
+	// 7.1 初始化存储服务 (New)
 	var storageService imtypes.StorageService // Use interface type from imtypes
 	storageBaseURL := "/uploads"              // Base URL for accessing uploaded files
 	if cfg.Storage.Type == "local" {
@@ -90,27 +110,33 @@ func main() {
 		log.Fatalf("不支持的存储类型: %s", cfg.Storage.Type)
 	}
 
-	// 6. 初始化 Handlers
-	authHandler := apiserver.NewAuthHandler(authService)
+	// 8. 初始化 Handlers
+	authHandler := apiserver.NewAuthHandler(authService, tokenBlacklistService)
 	userHandler := apiserver.NewUserHandler(userService)
 	convoHandler := apiserver.NewConversationHandler(conversationService, messageService, groupService)
-	groupHandler := apiserver.NewGroupHandler(groupService)
+	groupHandler := apiserver.NewGroupHandler(groupService, conversationService)
 	uploadHandler := apiserver.NewUploadHandler(storageService, cfg.Storage)
 	friendReqHandler := apiserver.NewFriendRequestHandler(friendReqService)
 
-	// 7. 设置 HTTP 路由
+	// 9. 设置 HTTP 路由
 	r := mux.NewRouter()
 
-	// 7.1 认证路由
+	// 9.1 认证路由
 	authRouter := r.PathPrefix("/auth").Subrouter()
 	authRouter.HandleFunc("/register", authHandler.Register).Methods(http.MethodPost)
 	authRouter.HandleFunc("/login", authHandler.Login).Methods(http.MethodPost)
 
+	// 创建 AuthMiddleware 实例
+	authMW := middleware.AuthMiddleware(cfg.Auth.JWTSecretKey, tokenBlacklistService)
+
 	// 7.2 API 子路由 (需要认证)
 	apiRouter := r.PathPrefix("/api/v1").Subrouter()
-	apiRouter.Use(func(next http.Handler) http.Handler {
-		return middleware.AuthMiddleware(next, cfg.Auth)
-	})
+	apiRouter.Use(authMW) // 应用创建的认证中间件
+
+	// 将登出路由移到受保护的 apiRouter 下，因为它需要认证来获取 JTI
+	// 确保 authHandler 已经初始化并且 LogoutHandler 可以工作
+	// 如果 AuthHandler 自身需要 tokenBlacklistService (例如在 NewAuthHandler 中注入)，请确保已完成
+	apiRouter.HandleFunc("/auth/logout", authHandler.LogoutHandler).Methods(http.MethodPost)
 
 	// 用户路由
 	apiRouter.HandleFunc("/users/me", userHandler.GetMyProfileHandler).Methods(http.MethodGet)
@@ -127,6 +153,7 @@ func main() {
 	apiRouter.HandleFunc("/groups/{groupID:[0-9]+}/join", groupHandler.JoinGroupHandler).Methods(http.MethodPost)
 	apiRouter.HandleFunc("/groups/{groupID:[0-9]+}/leave", groupHandler.LeaveGroupHandler).Methods(http.MethodPost)
 	apiRouter.HandleFunc("/groups/{groupID:[0-9]+}/members", groupHandler.GetGroupMembersHandler).Methods(http.MethodGet)
+	apiRouter.HandleFunc("/groups/{id:[0-9]+}/fix-participants", groupHandler.FixGroupConversationParticipants).Methods(http.MethodPost)
 	// 文件上传路由 (New)
 	apiRouter.HandleFunc("/upload", uploadHandler.UploadFileHandler).Methods(http.MethodPost)
 
@@ -203,6 +230,12 @@ func main() {
 		log.Println("Kafka 好友请求消费者 goroutine 已停止。")
 	}()
 
+	// 添加修复命令
+	if len(os.Args) > 1 && os.Args[1] == "fix-group-conversations" {
+		fixGroupConversations(db)
+		return
+	}
+
 	// 9. 启动 HTTP 服务器并实现优雅关闭
 	serverAddr := fmt.Sprintf("%s:%s", cfg.APIServer.Host, cfg.APIServer.Port)
 
@@ -260,4 +293,43 @@ func main() {
 	}
 
 	log.Println("API 服务器已成功关闭")
+}
+
+// 修复群组会话参与者
+func fixGroupConversations(db *gorm.DB) {
+	ctx := context.Background()
+
+	// 初始化存储库
+	userRepo := storage.NewGormUserRepository(db)
+	convoRepo := storage.NewGormConversationRepository(db)
+
+	// 初始化服务
+	convoService := services.NewConversationService(convoRepo, userRepo)
+
+	// 获取所有群组
+	var groups []models.Group
+	if err := db.Find(&groups).Error; err != nil {
+		fmt.Printf("获取群组失败: %v\n", err)
+		return
+	}
+
+	fmt.Printf("找到 %d 个群组，开始修复会话参与者...\n", len(groups))
+
+	// 针对每个群组修复会话参与者
+	for _, group := range groups {
+		fmt.Printf("处理群组: ID=%d, 名称=%s\n", group.ID, group.Name)
+
+		// 尝试修复
+		if convoService, ok := convoService.(interface {
+			FixGroupConversationParticipants(context.Context, uint) error
+		}); ok {
+			if err := convoService.FixGroupConversationParticipants(ctx, group.ID); err != nil {
+				fmt.Printf("修复群组 %d 的会话参与者失败: %v\n", group.ID, err)
+			}
+		} else {
+			fmt.Println("转换ConversationService失败，无法调用FixGroupConversationParticipants")
+		}
+	}
+
+	fmt.Println("修复流程完成")
 }

@@ -20,15 +20,17 @@ type WebSocketHandler struct {
 	messageService services.MessageService
 	userService    services.UserService // 可选，例如根据 token 获取用户信息
 	cfg            config.Config        // 用于获取 WebSocket 和 Auth 配置
+	tokenBlacklist auth.TokenBlacklist  // 新增：Token 黑名单服务
 }
 
 // NewWebSocketHandler 创建一个新的 WebSocketHandler 实例。
-func NewWebSocketHandler(hub *ws.Hub, msgService services.MessageService, userService services.UserService, cfg config.Config) *WebSocketHandler {
+func NewWebSocketHandler(hub *ws.Hub, msgService services.MessageService, userService services.UserService, cfg config.Config, blacklist auth.TokenBlacklist) *WebSocketHandler {
 	return &WebSocketHandler{
 		hub:            hub,
 		messageService: msgService,
 		userService:    userService,
 		cfg:            cfg,
+		tokenBlacklist: blacklist, // 存储注入的黑名单服务
 	}
 }
 
@@ -41,7 +43,8 @@ func (h *WebSocketHandler) ServeWS(w http.ResponseWriter, r *http.Request) {
 	var username string = "anonymous"
 
 	if token != "" {
-		claims, err := auth.ValidateToken(token, h.cfg.Auth.JWTSecretKey)
+		// 使用 r.Context() 和注入的 h.tokenBlacklist
+		claims, err := auth.ValidateToken(r.Context(), token, h.cfg.Auth.JWTSecretKey, h.tokenBlacklist)
 		if err != nil {
 			log.Printf("WebSocket 连接尝试失败：令牌无效: %v (令牌: %s)", err, token)
 			http.Error(w, fmt.Sprintf("令牌无效: %v", err), http.StatusUnauthorized)

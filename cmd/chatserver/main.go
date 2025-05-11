@@ -18,9 +18,12 @@ import (
 	"im-go/internal/config"
 	"im-go/internal/handlers/chatserver"
 	appKafka "im-go/internal/kafka"
+	appRedis "im-go/internal/redis"
 	"im-go/internal/services"
 	"im-go/internal/storage"
 	"im-go/internal/websocket"
+
+	redisDriver "github.com/redis/go-redis/v9"
 )
 
 // Kafka配置
@@ -50,9 +53,23 @@ func main() {
 	}
 	log.Println("Chat 服务器数据库表迁移成功。")
 
+	// 3.5 初始化 Redis Client (NEW)
+	redisClient := redisDriver.NewClient(&redisDriver.Options{
+		Addr:     cfg.Redis.Addr, // Ensure cfg.Redis fields are correct as per config.go
+		Password: cfg.Redis.Password,
+		DB:       cfg.Redis.DB,
+	})
+	_, err = redisClient.Ping(context.Background()).Result()
+	if err != nil {
+		log.Fatalf("ChatServer 无法连接到 Redis: %v", err)
+	}
+	log.Println("ChatServer 成功连接到 Redis")
+
+	// 3.6 初始化 TokenBlacklist 服务 (NEW)
+	tokenBlacklistService := appRedis.NewRedisTokenBlacklist(redisClient)
+
 	// 4. 初始化 Kafka Producer
 	kfkProducer, err := appKafka.NewConfluentKafkaProducer(cfg.Kafka)
-
 	if err != nil {
 		log.Fatalf("无法创建 Kafka 生产者: %v", err)
 	}
@@ -75,7 +92,7 @@ func main() {
 	log.Println("WebSocket Hub 已启动。")
 
 	// 8. 初始化 WebSocket Handler
-	wsHandler := chatserver.NewWebSocketHandler(hub, messageService, userService, cfg)
+	wsHandler := chatserver.NewWebSocketHandler(hub, messageService, userService, cfg, tokenBlacklistService)
 
 	// 9. 初始化 Kafka 消费者 (用于处理入站消息)
 	inboundConsumer, err := appKafka.NewConfluentKafkaConsumer(cfg.Kafka)
